@@ -8,7 +8,7 @@ import pushbullet
 
 from taskee import events
 from taskee.tasks import TaskManager
-from taskee.utils import config_path, logger
+from taskee.utils import initialize_earthengine, initialize_pushbullet, logger
 
 
 class Watcher:
@@ -57,7 +57,10 @@ class Watcher:
                         time.sleep(wait_time.seconds)
 
             except Exception as e:
-                self.pb.push_note("Oops!", "Something went wrong and taskee-bot crashed. You'll have to restart now.")
+                self.pb.push_note(
+                    "Oops!",
+                    "Something went wrong and taskee crashed. You'll have to restart now.",
+                )
                 raise e
 
     def update(self, watch_for):
@@ -82,52 +85,14 @@ def initialize() -> Watcher:
     Pushbullet API key hasn't previously been stored, this will
     request and store one for future use."""
     logger.debug("Initializing Earth Engine...")
-    try:
-        ee.Initialize()
-    except ee.EEException:
-        ee.Authenticate()
-        ee.Initialize()
+    initialize_earthengine()
 
     logger.debug("Initializing Pushbullet...")
+    pb = initialize_pushbullet()
 
-    config = configparser.ConfigParser()
-
-    if os.path.isfile(config_path):
-        config.read(config_path)
-
-        try:
-            apikey = config["Pushbullet"]["api_key"]
-        except KeyError:
-            apikey = request_pushbullet_key()
-    else:
-        apikey = request_pushbullet_key()
-
-    pb = None
-    while not pb:
-        try:
-            pb = pushbullet.Pushbullet(apikey)
-        except pushbullet.errors.InvalidKeyError:
-            logger.error("Invalid Pushbullet API key...")
-            apikey = request_pushbullet_key()
-
-    set_pushbullet_key(apikey)
     manager = TaskManager(ee.data.getTaskList())
 
     return Watcher(pb, manager)
-
-
-def request_pushbullet_key() -> str:
-    apikey = input("Enter Pushbullet API key to continue:")
-    return apikey
-
-
-def set_pushbullet_key(key: str) -> None:
-    config = configparser.ConfigParser()
-    config["Pushbullet"] = {"api_key": key}
-
-    with open(config_path, "a") as dst:
-        logger.info("Storing Pushbullet API key for future use.")
-        config.write(dst)
 
 
 if __name__ == "__main__":
