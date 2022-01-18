@@ -27,7 +27,7 @@ class Task:
         new_state = new_status["state"]
         # Only track attempts for running tasks
         last_attempt = self.status["attempt"] if last_state == states.RUNNING else None
-        new_attempt = self.status["attempt"] if last_state == states.RUNNING else None
+        new_attempt = new_status["attempt"] if last_state == states.RUNNING else None
 
         self.event = events.parse_event(
             self, last_state, new_state, last_attempt, new_attempt
