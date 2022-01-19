@@ -2,27 +2,28 @@ import configparser
 import datetime
 import os
 import time
+from typing import List, Type
 
 import ee
-import pushbullet
 
 from taskee import events
+from taskee.notifiers.notifier import Notifier, get_notifiers
 from taskee.tasks import TaskManager
-from taskee.utils import initialize_earthengine, initialize_pushbullet, logger
+from taskee.utils import initialize_earthengine, logger
 
 
 class Watcher:
-    def __init__(self, pb: pushbullet.Pushbullet, manager: TaskManager):
+    def __init__(self, notifiers: List[Notifier], manager: TaskManager):
         """
 
         Parameters
         ----------
-        pb : pushbullet.Pushbullet
-            An initialized Pushbullet object for handling notifications.
+        notifiers : List[Notifier]
+            Notifier objects for handling notifications.
         manager : TaskManager
             The manager to handle tasks.
         """
-        self.pb = pb
+        self.notifiers = notifiers
         self.manager = manager
 
     def watch(
@@ -40,6 +41,8 @@ class Watcher:
         """
         last_checked = time.time()
         interval_seconds = interval_minutes * 60.0
+
+        watch_for = events.get_events(watch_for)
 
         logger.debug("Starting task watcher...")
         logger.debug(f"Watching for: {[event.__name__ for event in watch_for]}")
@@ -62,10 +65,11 @@ class Watcher:
                         time.sleep(wait_time.seconds)
 
             except Exception as e:
-                self.pb.push_note(
-                    "Oops!",
-                    "Something went wrong and taskee crashed. You'll have to restart now.",
-                )
+                for notifier in self.notifiers:
+                    notifier.send(
+                        title="Oops",
+                        message="Something went wrong and taskee needs to be restarted.",
+                    )
                 raise e
 
     def update(self, watch_for):
@@ -85,8 +89,9 @@ class Watcher:
                 event_found = True
 
                 logger.info(event_message)
-                # TODO: Check `push` status code and decide what to do with errors (resend later? Crash? Just log?)
-                push = self.pb.push_note(event.title, event.message)
+
+                for notifier in self.notifiers:
+                    notifier.send(event.title, event.message)
 
             else:
                 logger.debug(f"Event found, but ignored: {event_message}")
@@ -95,18 +100,20 @@ class Watcher:
             logger.info("No events to report.")
 
 
-def initialize() -> Watcher:
+def initialize(notifiers: List[Type[Notifier]]) -> Watcher:
     """Initialize the system and return a new task watcher. If a
     Pushbullet API key hasn't previously been stored, this will
     request and store one for future use."""
     logger.debug("Initializing Earth Engine...")
     initialize_earthengine()
 
-    logger.debug("Initializing Pushbullet...")
-    pb = initialize_pushbullet()
-
     logger.debug("Initializing Task Manager...")
     manager = TaskManager(ee.data.getTaskList())
+
+    selected_notifiers = get_notifiers(notifiers)
+    activated_notifiers = [notifier() for notifier in selected_notifiers]
+
+    logger.debug(f"Notifiers: {[notifier.__name__ for notifier in selected_notifiers]}")
 
     total_tasks = len(manager.tasks)
     active_tasks = len(
@@ -118,4 +125,4 @@ def initialize() -> Watcher:
     )
     logger.info(f"{total_tasks} tasks found. {active_tasks} are active.")
 
-    return Watcher(pb, manager)
+    return Watcher(notifiers=activated_notifiers, manager=manager)

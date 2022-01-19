@@ -88,6 +88,9 @@ def list_events() -> Dict[str, Type["Event"]]:
 
 def get_events(names: List[Union[str, Type[Event]]]) -> Set[Type[Event]]:
     """Take a list of events by name or class and return a list of the corresponding classes."""
+    if names == "all":
+        return set(list_events().values())
+
     # Allow single values to be passed
     names = [names] if not isinstance(names, (list, tuple)) else names
     options = list_events()
