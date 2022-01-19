@@ -17,10 +17,10 @@ from taskee.events import get_events
 @click.option(
     "--interval",
     "-i",
-    default=15,
+    default=15.0,
     help="The interval in minutes to check for new events.",
 )
-def main(events: List[str], interval: int) -> None:
+def main(events: List[str], interval: float) -> None:
     watch_for = get_events(events)
     watcher = watch.initialize()
     watcher.watch(watch_for=watch_for, interval_minutes=interval)

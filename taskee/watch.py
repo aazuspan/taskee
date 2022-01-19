@@ -79,11 +79,17 @@ class Watcher:
             if event is None:
                 continue
 
+            event_message = ": ".join([event.title, event.message])
+
             if isinstance(event, tuple(watch_for)):
                 event_found = True
-                logger.info(": ".join([event.title, event.message]))
+                
+                logger.info(event_message)
                 # TODO: Check `push` status code and decide what to do with errors (resend later? Crash? Just log?)
                 push = self.pb.push_note(event.title, event.message)
+            
+            else:
+                logger.debug(f"Event found, but ignored: {event_message}")
 
         if not event_found:
             logger.info("No events to report.")
