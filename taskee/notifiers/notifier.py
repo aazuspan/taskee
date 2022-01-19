@@ -20,11 +20,12 @@ def list_notifiers() -> Dict[str, Type["Event"]]:
 
 def get_notifiers(names: List[Union[str, Type[Notifier]]]) -> Set[Type[Notifier]]:
     """Take a list of notifiers by name or class and return a list of the corresponding classes."""
-    if names == "all":
-        return set(list_notifiers.values())
-
     # Allow single values to be passed
     names = [names] if not isinstance(names, (list, tuple)) else names
+
+    if "all" in [name.lower() for name in names if isinstance(name, str)]:
+        return set(list_notifiers().values())
+
     options = list_notifiers()
     keys = list(options.keys())
 
