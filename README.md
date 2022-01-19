@@ -18,7 +18,7 @@
 ### 1. Install from PyPI
 First, install the `taskee` package from PyPI.
 
-```bash
+```posh
 pip install taskee
 ```
 
@@ -28,7 +28,7 @@ Next, make sure you have a [Google Earth Engine](https://developers.google.com/e
 ### 3. Set up Pushbullet (Optional)
 If you want to receive mobile notifications (Android only), you'll need to create or connect an account with [Pushbullet](https://pushbullet.com), download the app on your device(s), and install the [Pushbullet Python API](https://github.com/rbrcsk/pushbullet.py). 
 
-```bash
+```posh
 pip install pushbullet.py
 ```
 
@@ -51,14 +51,40 @@ watcher.watch(watch_for="Completed", interval_minutes=10)
 
 ### Command Line
 
-You can also run `taskee` with the command line interface.
+You can also run `taskee` with the command line interface. By default, the command below will watch for `completed` and `failed` events every 15 minutes and notify you with `native` notifications.
 
-```bash
-python -m taskee.cli Completed --interval_mins 10 --notifier Pushbullet
+```posh
+python -m taskee.cli
+```
+
+You can watch for additional events by providing a list of events (case-insensitive).
+
+```posh
+python -m taskee.cli completed failed attempted
+```
+
+Or use `all` to monitor any event type.
+```posh
+python -m taskee.cli all
+```
+
+You add notifiers using the `--notifier` or `-n` option. Like with events, you can use `all` as a shortcut.
+```posh
+python -m taskee.cli -n native -n pushbullet
+```
+
+And you can adjust the update interval using the `--interval_mins` or `-i` option.
+```posh
+python -m taskee.cli -i 10
+```
+
+Putting it all together, the command below will watch for `failed` and `attempted` events using the `pushbullet` notifier every `5` minutes.
+```posh
+python -m taskee.cli failed attempted -n pushbullet -i 5
 ```
 
 For help:
-```bash
+```posh
 python -m taskee.cli --help
 ```
 
