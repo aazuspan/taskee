@@ -6,7 +6,7 @@ from taskee import watch
 
 
 @click.command(
-    help="Run the taskee task watcher. EVENTS is one or more event types to watch for from the list ['new', 'started', 'attempted', 'cancelled', 'completed', 'failed', 'all']. By default, 'completed' and 'failed' are used."
+    help="Run the taskee task watcher. EVENTS is one or more event types to watch for from the list ['created', 'started', 'attempted', 'cancelled', 'completed', 'failed', 'all']. By default, 'completed' and 'failed' are used."
 )
 @click.argument("events", nargs=-1)
 @click.option(
