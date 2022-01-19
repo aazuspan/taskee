@@ -10,7 +10,7 @@ class Task:
         self.status = obj
         self.id = obj["id"]
         self.description = obj["description"]
-        self.event = events.New(self)
+        self.event = events.Created(self)
 
     def __str__(self) -> str:
         return f"<{self.id}>: {self.description} [{self.state}]"

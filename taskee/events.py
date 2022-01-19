@@ -40,10 +40,10 @@ class Completed(Event):
         return f"Task '{self.task.description}' completed successfully!"
 
 
-class New(Event):
-    """A New event occurs when a new task is created."""
+class Created(Event):
+    """A Created event occurs when a new task is created."""
 
-    title = "New Task"
+    title = "Task Created"
 
     @property
     def message(self):
