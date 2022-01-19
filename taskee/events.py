@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
 
-from requests.structures import CaseInsensitiveDict
-
 from taskee.states import CANCELLED, COMPLETED, FAILED, READY, RUNNING
-from taskee.utils import _get_case_insensitive_close_matches
+from taskee.utils import _list_subclasses, _get_subclasses
 
 
 class Event(ABC):
@@ -82,48 +80,31 @@ class Started(Event):
 
 
 def list_events() -> Dict[str, Type["Event"]]:
-    """Return a case-insensitive dictionary of all available Event classes."""
-    return CaseInsensitiveDict({cls.__name__: cls for cls in Event.__subclasses__()})
+    """List all Event subclasses. Return as a dictionary mapping the subclass name to the 
+    class.
+    
+    Returns
+    -------
+    Dict[str, Type[Event]]
+        A dictionary mapping the Event name to the class.
+    """
+    return _list_subclasses(Event)
 
 
 def get_events(names: List[Union[str, Type[Event]]]) -> Set[Type[Event]]:
-    """Take a list of events by name or class and return a list of the corresponding classes."""
-    # Allow single values to be passed
-    names = [names] if not isinstance(names, (list, tuple)) else names
+    """Retrieve a set of subclasses of Event.
 
-    if "all" in [name.lower() for name in names if isinstance(name, str)]:
-        return set(list_events().values())
+    Parameters
+    ----------
+    names : List[Union[str, Type[Event]]]
+        A list of names or classes of Events to retrieve.
 
-    options = list_events()
-    keys = list(options.keys())
-
-    selected = []
-
-    for name in names:
-        if isinstance(name, str):
-            try:
-                selected.append(options[name])
-            except KeyError:
-                close_matches = _get_case_insensitive_close_matches(name, keys, n=3)
-                hint = (
-                    " Close matches: {}.".format(close_matches) if close_matches else ""
-                )
-
-                raise AttributeError(
-                    '"{}" is not a supported event type. Choose from {}.{}'.format(
-                        name, keys, hint
-                    )
-                )
-        else:
-            try:
-                if issubclass(name, Event):
-                    selected.append(name)
-            except TypeError:
-                raise AttributeError(
-                    f"Events must be strings or subclasses of Event, not {type(name)}."
-                )
-
-    return set(selected)
+    Returns
+    -------
+    Set[Type[Any]]
+        A set of Events.
+    """
+    return _get_subclasses(names, Event)
 
 
 def parse_event(
