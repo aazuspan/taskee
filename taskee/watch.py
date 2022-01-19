@@ -26,7 +26,7 @@ class Watcher:
         self.manager = manager
 
     def watch(
-        self, watch_for=(events.Failed, events.Completed), interval_seconds: int = 60
+        self, watch_for=(events.Failed, events.Completed), interval_minutes: int = 15
     ):
         """
         Parameters
@@ -34,11 +34,16 @@ class Watcher:
         watch_for : List[Union[str, taskee.events.Event]]
             A list of events to watch for, passed by name or class. Events not on this
             list will be ignored.
-        interval_seconds: int, default 60
-            Number of seconds to wait between updates. Updates that are too
+        interval_minutes: int, default 15
+            Number of minutes to wait between updates. Updates that are too
             frequent may lead to rate limits from Earth Engine or Pushbullet.
         """
         last_checked = time.time()
+        interval_seconds = interval_minutes * 60.0
+
+        logger.debug("Starting task watcher...")
+        logger.debug(f"Watching for: {[event.__name__ for event in watch_for]}")
+        logger.debug(f"Update interval: {interval_minutes} min.")
 
         while True:
             try:
@@ -64,20 +69,24 @@ class Watcher:
                 raise e
 
     def update(self, watch_for):
-        logger.info("Checking tasks!")
+        logger.debug("Updating tasks...")
         self.manager.update(ee.data.getTaskList())
 
+        event_found = False
         for task in self.manager.tasks.values():
             event = task.event
 
             if event is None:
                 continue
 
-            if isinstance(event, watch_for):
+            if isinstance(event, tuple(watch_for)):
+                event_found = True
                 logger.info(": ".join([event.title, event.message]))
-
                 # TODO: Check `push` status code and decide what to do with errors (resend later? Crash? Just log?)
                 push = self.pb.push_note(event.title, event.message)
+
+        if not event_found:
+            logger.info("No events to report.")
 
 
 def initialize() -> Watcher:
@@ -90,20 +99,17 @@ def initialize() -> Watcher:
     logger.debug("Initializing Pushbullet...")
     pb = initialize_pushbullet()
 
+    logger.debug("Initializing Task Manager...")
     manager = TaskManager(ee.data.getTaskList())
 
-    return Watcher(pb, manager)
-
-
-if __name__ == "__main__":
-    watch = (
-        events.Cancelled,
-        events.Attempt,
-        events.New,
-        events.Started,
-        events.Failed,
-        events.Completed,
+    total_tasks = len(manager.tasks)
+    active_tasks = len(
+        [
+            task
+            for task in manager.tasks.values()
+            if task.state in ("RUNNING", "STARTED")
+        ]
     )
+    logger.info(f"{total_tasks} tasks found. {active_tasks} are active.")
 
-    watcher = initialize()
-    watcher.watch(watch_for=watch, interval_seconds=15)
+    return Watcher(pb, manager)
