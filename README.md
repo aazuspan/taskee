@@ -1,5 +1,4 @@
 # taskee
-Push notifications for Earth Engine tasks.
 
 ![](assets/preview_windows.jpg)
 
