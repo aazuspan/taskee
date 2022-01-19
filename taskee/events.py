@@ -8,7 +8,7 @@ from taskee.utils import _get_case_insensitive_close_matches
 
 
 class Event(ABC):
-    title = "Generic Task"
+    title = "Generic Event"
 
     def __init__(self, task):
         self.task = task
@@ -20,6 +20,8 @@ class Event(ABC):
 
 
 class Failed(Event):
+    """A Failed event occurs when a task fails to complete."""
+
     title = "Task Failed"
 
     @property
@@ -29,6 +31,8 @@ class Failed(Event):
 
 
 class Completed(Event):
+    """A Completed event occurs when a task completes successfully."""
+
     title = "Task Completed"
 
     @property
@@ -37,6 +41,8 @@ class Completed(Event):
 
 
 class New(Event):
+    """A New event occurs when a new task is created."""
+
     title = "New Task"
 
     @property
@@ -44,16 +50,20 @@ class New(Event):
         return f"Task '{self.task.description}' was created."
 
 
-class Attempt(Event):
-    title = "New Attempt"
+class Attempted(Event):
+    """An Attempted event occurs when an attempt fails and a new attempt beings."""
+
+    title = "Attempt Failed"
 
     @property
     def message(self):
         n = self.task.status["attempt"]
-        return f"Task '{self.task.description}' attempts changed to {n}."
+        return f"Task '{self.task.description}' attempt {n - 1} failed."
 
 
 class Cancelled(Event):
+    """A Cancelled event occurs when a task is cancelled by the user."""
+
     title = "Task Cancelled"
 
     @property
@@ -62,6 +72,8 @@ class Cancelled(Event):
 
 
 class Started(Event):
+    """A Started event occurs when a ready task begins running."""
+
     title = "Task Started"
 
     @property
@@ -127,6 +139,6 @@ def parse_event(
             event = Completed(task)
 
     if old_attempts != new_attempts:
-        event = Attempt(task)
+        event = Attempted(task)
 
     return event

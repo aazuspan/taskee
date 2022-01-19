@@ -83,11 +83,11 @@ class Watcher:
 
             if isinstance(event, tuple(watch_for)):
                 event_found = True
-                
+
                 logger.info(event_message)
                 # TODO: Check `push` status code and decide what to do with errors (resend later? Crash? Just log?)
                 push = self.pb.push_note(event.title, event.message)
-            
+
             else:
                 logger.debug(f"Event found, but ignored: {event_message}")
 
