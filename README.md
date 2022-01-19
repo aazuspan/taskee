@@ -1,15 +1,17 @@
 # taskee
 Push notifications for Earth Engine tasks.
 
+![](assets/preview_windows.jpg)
+
 ## Description
 
 `taskee` is a tool for monitoring `Google Earth Engine` tasks. It runs in the background and can send notifications to your phone or computer to let you know when your tasks finish (or fail). You can run `taskee` in a spare terminal or Jupyter kernel, or even on a dedicated [Raspberry Pi](https://www.raspberrypi.org/) for 24/7 monitoring!
 
 ## Features
 
-- :gear: Monitor [Google Earth Engine](https://developers.google.com/earth-engine) tasks created with the Python API and/or the Javascript Code Editor
-- :computer: Native notifications for Linux, Mac, and Windows
-- :iphone: Mobile push notifications for Android
+- 🔍 Monitor [Google Earth Engine](https://developers.google.com/earth-engine) tasks created with the Python API and/or the Javascript Code Editor
+- 💻 Native notifications for Linux, Mac, and Windows
+- 📱 Mobile push notifications for Android
 
 ## Setup
 
