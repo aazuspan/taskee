@@ -1,15 +1,17 @@
 from typing import Dict, List
 
 from taskee import events, states
-
+import datetime
+from taskee.utils import _millis_to_datetime
 
 class Task:
     """Wrapper class around a persistent Earth Engine task."""
 
     def __init__(self, obj: Dict):
-        self.status = obj
+        self._status = obj
         self.id = obj["id"]
         self.description = obj["description"]
+        self.time_created = _millis_to_datetime(obj["creation_timestamp_ms"])
         self.event = events.Created(self)
 
     def __str__(self) -> str:
@@ -18,23 +20,31 @@ class Task:
     @property
     def state(self) -> str:
         """Get the last state of the task."""
-        return self.status["state"]
+        return self._status["state"]
+
+    @property
+    def last_update(self) -> datetime.datetime:
+        return _millis_to_datetime(self._status["update_timestamp_ms"])
+
+    @property
+    def time_elapsed(self) -> datetime.datetime:
+        """Return the time elapsed between the task creation and the last update."""
+        return self.last_update - self.time_created
 
     def update(self, new_status: Dict) -> None:
         """Update the status of the task and record any changed attributes as events."""
-
         self.event = self._parse_event(new_status)
-        self.status = new_status
+        self._status = new_status
 
     def _parse_event(self, new_status: Dict) -> events.Event:
         """Take the updated status dictionary and identify if an Event occured."""
         event = None
 
-        old_state = self.status["state"]
+        old_state = self._status["state"]
         new_state = new_status["state"]
 
         try:
-            old_attempt, new_attempt = self.status["attempt"], new_status["attempt"]
+            old_attempt, new_attempt = self._status["attempt"], new_status["attempt"]
         # During some states, tasks will not have an attempt value
         except KeyError:
             old_attempt, new_attempt = 0

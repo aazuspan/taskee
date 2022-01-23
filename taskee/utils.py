@@ -1,3 +1,4 @@
+import datetime
 import difflib
 import logging
 import os
@@ -120,3 +121,8 @@ def _get_subclasses(
                 )
 
     return set(selected)
+
+
+def _millis_to_datetime(millis: str) -> datetime.datetime:
+    """Convert a timestamp in UTC milliseconds (e.g. from Earth Engine) to a datetime object."""
+    return datetime.datetime.utcfromtimestamp(int(millis) / 1000.0)
