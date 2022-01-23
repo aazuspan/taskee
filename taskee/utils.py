@@ -1,10 +1,10 @@
 import difflib
 import logging
 import os
-from typing import List, Union, Any, Dict, Type, Set
-from requests.structures import CaseInsensitiveDict
+from typing import Any, Dict, List, Set, Type, Union
 
 import ee
+from requests.structures import CaseInsensitiveDict
 from rich.logging import RichHandler
 
 logging.basicConfig(handlers=[RichHandler()])
@@ -51,23 +51,27 @@ def _get_case_insensitive_close_matches(
 
 
 def _list_subclasses(superclass: Type[Any]) -> Dict[str, Type[Any]]:
-    """List all subclasses of a given superclass. Return as a dictionary mapping the 
+    """List all subclasses of a given superclass. Return as a dictionary mapping the
     subclass name to the class.
-    
+
     Parameters
     ----------
     superclass : Type[Any]
         The superclass to list subclasses of.
-    
+
     Returns
     -------
     Dict[str, Type[Any]]
         A dictionary mapping the subclass name to the class.
     """
-    return CaseInsensitiveDict({cls.__name__: cls for cls in superclass.__subclasses__()})
+    return CaseInsensitiveDict(
+        {cls.__name__: cls for cls in superclass.__subclasses__()}
+    )
 
 
-def _get_subclasses(names: List[Union[str, Type[Any]]], superclass: Type[Any]) -> Set[Type[Any]]:
+def _get_subclasses(
+    names: List[Union[str, Type[Any]]], superclass: Type[Any]
+) -> Set[Type[Any]]:
     """Retrieve a set of subclasses of a given superclass.
 
     Parameters

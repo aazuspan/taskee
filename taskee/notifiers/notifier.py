@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
 
-from taskee.utils import _list_subclasses, _get_subclasses
+from taskee.utils import _get_subclasses, _list_subclasses
 
 
 class Notifier(ABC):
@@ -11,9 +11,9 @@ class Notifier(ABC):
 
 
 def list_notifiers() -> Dict[str, Type[Notifier]]:
-    """List all Notifier subclasses. Return as a dictionary mapping the subclass name to the 
+    """List all Notifier subclasses. Return as a dictionary mapping the subclass name to the
     class.
-    
+
     Returns
     -------
     Dict[str, Type[Notifier]]

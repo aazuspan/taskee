@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
 
 from taskee.states import CANCELLED, COMPLETED, FAILED, READY, RUNNING
-from taskee.utils import _list_subclasses, _get_subclasses
+from taskee.utils import _get_subclasses, _list_subclasses
 
 
 class Event(ABC):
@@ -80,9 +80,9 @@ class Started(Event):
 
 
 def list_events() -> Dict[str, Type["Event"]]:
-    """List all Event subclasses. Return as a dictionary mapping the subclass name to the 
+    """List all Event subclasses. Return as a dictionary mapping the subclass name to the
     class.
-    
+
     Returns
     -------
     Dict[str, Type[Event]]
@@ -107,7 +107,7 @@ def get_events(names: List[Union[str, Type[Event]]]) -> Set[Type[Event]]:
     return _get_subclasses(names, Event)
 
 
-def parse_event(
+def _parse_event(
     task, old_state: str, new_state: str, old_attempts: int = 0, new_attempts: int = 0
 ) -> Event:
     """Take details from a Task and return a corresponding Event object."""

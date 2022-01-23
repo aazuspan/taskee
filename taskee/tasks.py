@@ -29,7 +29,7 @@ class Task:
         last_attempt = self.status["attempt"] if last_state == states.RUNNING else None
         new_attempt = new_status["attempt"] if last_state == states.RUNNING else None
 
-        self.event = events.parse_event(
+        self.event = events._parse_event(
             self, last_state, new_state, last_attempt, new_attempt
         )
 
