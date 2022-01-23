@@ -1,8 +1,9 @@
+import datetime
 from typing import Dict, List
 
 from taskee import events, states
-import datetime
 from taskee.utils import _millis_to_datetime
+
 
 class Task:
     """Wrapper class around a persistent Earth Engine task."""
