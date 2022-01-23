@@ -1,6 +1,4 @@
-import configparser
 import datetime
-import os
 import time
 from typing import List, Type
 
@@ -71,6 +69,9 @@ class Watcher:
                         message="Something went wrong and taskee needs to be restarted.",
                     )
                 raise e
+            except KeyboardInterrupt:
+                logger.info("Shutting down...")
+                break
 
     def update(self, watch_for):
         logger.debug("Updating tasks...")
@@ -100,10 +101,12 @@ class Watcher:
             logger.info("No events to report.")
 
 
-def initialize(notifiers: List[Type[Notifier]]) -> Watcher:
+def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> Watcher:
     """Initialize the system and return a new task watcher. If a
     Pushbullet API key hasn't previously been stored, this will
     request and store one for future use."""
+    logger.setLevel(logging_level.upper())
+
     logger.debug("Initializing Earth Engine...")
     initialize_earthengine()
 

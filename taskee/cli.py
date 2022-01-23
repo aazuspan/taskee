@@ -23,11 +23,23 @@ from taskee import watch
     default=15.0,
     help="Interval in minutes between updates.",
 )
-def main(events: Tuple[str], notifiers: Tuple[str], interval_minutes: float) -> None:
+@click.option(
+    "logging_level",
+    "-l",
+    "--log_level",
+    default="INFO",
+    help="Set the logging level.",
+)
+def main(
+    events: Tuple[str],
+    notifiers: Tuple[str],
+    interval_minutes: float,
+    logging_level: str,
+) -> None:
     events = ("completed", "failed") if not events else events
     notifiers = "native" if not notifiers else notifiers
 
-    watcher = watch.initialize(notifiers=notifiers)
+    watcher = watch.initialize(notifiers=notifiers, logging_level=logging_level)
     watcher.watch(watch_for=events, interval_minutes=interval_minutes)
 
 
