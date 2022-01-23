@@ -24,13 +24,13 @@ class Task:
         return self._status["state"]
 
     @property
-    def last_update(self) -> datetime.datetime:
+    def time_updated(self) -> datetime.datetime:
         return _millis_to_datetime(self._status["update_timestamp_ms"])
 
     @property
     def time_elapsed(self) -> datetime.datetime:
         """Return the time elapsed between the task creation and the last update."""
-        return self.last_update - self.time_created
+        return self.time_updated - self.time_created
 
     def update(self, new_status: Dict) -> None:
         """Update the status of the task and record any changed attributes as events."""
