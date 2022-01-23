@@ -23,17 +23,36 @@ class Task:
     def update(self, new_status: Dict) -> None:
         """Update the status of the task and record any changed attributes as events."""
 
-        last_state = self.status["state"]
-        new_state = new_status["state"]
-        # Only track attempts for running tasks
-        last_attempt = self.status["attempt"] if last_state == states.RUNNING else None
-        new_attempt = new_status["attempt"] if last_state == states.RUNNING else None
-
-        self.event = events._parse_event(
-            self, last_state, new_state, last_attempt, new_attempt
-        )
-
+        self.event = self._parse_event(new_status)
         self.status = new_status
+
+    def _parse_event(self, new_status: Dict) -> events.Event:
+        """Take the updated status dictionary and identify if an Event occured."""
+        event = None
+
+        old_state = self.status["state"]
+        new_state = new_status["state"]
+
+        try:
+            old_attempt, new_attempt = self.status["attempt"], new_status["attempt"]
+        # During some states, tasks will not have an attempt value
+        except KeyError:
+            old_attempt, new_attempt = 0
+
+        if old_state != new_state:
+            if new_state == states.RUNNING:
+                event = events.Started(self)
+            elif new_state == states.CANCELLED:
+                event = events.Cancelled(self)
+            elif new_state == states.FAILED:
+                event = events.Failed(self)
+            elif new_state == states.COMPLETED:
+                event = events.Completed(self)
+
+        if old_attempt != new_attempt:
+            event = events.Attempted(self)
+
+        return event
 
 
 class TaskManager:
