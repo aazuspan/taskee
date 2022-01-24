@@ -6,12 +6,19 @@ from typing import Any, Dict, List, Set, Type, Union
 
 import ee
 from requests.structures import CaseInsensitiveDict
+from rich.console import Console
 from rich.logging import RichHandler
+from rich.table import Table
+
+import humanize
+
+from taskee import states
 
 logging.basicConfig(handlers=[RichHandler()])
 
 logger = logging.getLogger("taskee")
 logger.setLevel(logging.DEBUG)
+console = Console()
 
 config_path = os.path.expanduser("~/.config/taskee.ini")
 
@@ -126,3 +133,49 @@ def _get_subclasses(
 def _millis_to_datetime(millis: str) -> datetime.datetime:
     """Convert a timestamp in UTC milliseconds (e.g. from Earth Engine) to a datetime object."""
     return datetime.datetime.utcfromtimestamp(int(millis) / 1000.0)
+
+
+def _datetime_to_millis(dt: datetime.datetime) -> int:
+    """Convert a UTC datetime to a timestamp in milliseconds"""
+    return int(dt.timestamp() * 1000)
+
+
+def _shorten_string(s: str, max_len: int = 10):
+    """Shorten a string by abbreviating it at max_len and adding an ellipse if it was shortened."""
+    if len(s) > max_len:
+        return s[:max_len] + "..."
+    return s
+
+
+def _create_task_table(tasks: List["Task"], max_tasks: int=None, title: str=None) -> Table:
+    """Create a table of tasks."""
+    t = Table(title=title, row_styles=["", "dim"])
+
+    t.add_column("State", justify="right")
+    t.add_column("Description", justify="left")
+    t.add_column("Created", justify="right")
+    t.add_column("Elapsed", justify="right")
+
+    table_tasks = tasks[:max_tasks]
+    for task in table_tasks:
+        row_style = (
+            "red"
+            if task.state in states.UNSUCCESSFUL
+            else "blue"
+            if task.state in states.ACTIVE
+            else "green"
+        )
+        if task.state == states.CANCELLED:
+            row_style += " strike"
+
+        t.add_row(
+            task.state,
+            task.short_description,
+            humanize.naturaltime(
+                task.time_created, when=datetime.datetime.utcnow()
+            ),
+            humanize.naturaldelta(task.time_elapsed),
+            style=row_style,
+        )
+
+    return t
