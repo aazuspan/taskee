@@ -5,12 +5,11 @@ import os
 from typing import Any, Dict, List, Set, Type, Union
 
 import ee
+import humanize
 from requests.structures import CaseInsensitiveDict
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
-
-import humanize
 
 from taskee import states
 
@@ -147,7 +146,9 @@ def _shorten_string(s: str, max_len: int = 10):
     return s
 
 
-def _create_task_table(tasks: List["Task"], max_tasks: int=None, title: str=None) -> Table:
+def _create_task_table(
+    tasks: List["Task"], max_tasks: int = None, title: str = None
+) -> Table:
     """Create a table of tasks."""
     t = Table(title=title, row_styles=["", "dim"])
 
@@ -171,9 +172,7 @@ def _create_task_table(tasks: List["Task"], max_tasks: int=None, title: str=None
         t.add_row(
             task.state,
             task.short_description,
-            humanize.naturaltime(
-                task.time_created, when=datetime.datetime.utcnow()
-            ),
+            humanize.naturaltime(task.time_created, when=datetime.datetime.utcnow()),
             humanize.naturaldelta(task.time_elapsed),
             style=row_style,
         )

@@ -7,7 +7,8 @@ import ee
 from taskee import events
 from taskee.notifiers.notifier import Notifier, get_notifiers
 from taskee.tasks import TaskManager
-from taskee.utils import console, initialize_earthengine, logger, _create_task_table
+from taskee.utils import (_create_task_table, console, initialize_earthengine,
+                          logger)
 
 
 class Watcher:
@@ -77,7 +78,7 @@ class Watcher:
         logger.debug("Updating tasks...")
         self.manager.update(ee.data.getTaskList())
 
-        changed_tasks =  []
+        changed_tasks = []
         for task in self.manager.tasks.values():
             event = task.event
 
@@ -130,6 +131,8 @@ def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> 
         ]
     )
     logger.info(f"{total_tasks} tasks found. {active_tasks} are active.")
-    console.print(_create_task_table(list(manager.tasks.values()), max_tasks=16, title="Tasks"))
+    console.print(
+        _create_task_table(list(manager.tasks.values()), max_tasks=16, title="Tasks")
+    )
 
     return Watcher(notifiers=activated_notifiers, manager=manager)

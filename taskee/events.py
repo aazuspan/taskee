@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
+
 import humanize
 
 from taskee.utils import _get_subclasses, _list_subclasses
