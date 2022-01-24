@@ -6,7 +6,7 @@ from taskee import watch
 
 
 @click.command(
-    help="Run the taskee task watcher. EVENTS is one or more event types to watch for from the list ['created', 'started', 'attempted', 'cancelled', 'completed', 'failed', 'all']. By default, 'completed' and 'failed' are used."
+    help="Run the taskee task watcher. EVENTS is one or more event types to watch for from the list ['created', 'started', 'attempted', 'cancelled', 'completed', 'failed', 'error', 'all']. By default, 'completed', 'failed', and 'error' are used."
 )
 @click.argument("events", nargs=-1)
 @click.option(
@@ -36,7 +36,7 @@ def main(
     interval_minutes: float,
     logging_level: str,
 ) -> None:
-    events = ("completed", "failed") if not events else events
+    events = ("completed", "failed", "error") if not events else events
     notifiers = "native" if not notifiers else notifiers
 
     watcher = watch.initialize(notifiers=notifiers, logging_level=logging_level)

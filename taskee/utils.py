@@ -2,6 +2,7 @@ import datetime
 import difflib
 import logging
 import os
+from inspect import isabstract
 from typing import Any, Dict, List, Set, Type, Union
 
 import ee
@@ -57,9 +58,16 @@ def _get_case_insensitive_close_matches(
     return [p for p in possibilities if p.lower() in lower_matches]
 
 
+def _all_subclasses(cls):
+    """Recursively find all subclasses of a given class."""
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in _all_subclasses(c)]
+    )
+
+
 def _list_subclasses(superclass: Type[Any]) -> Dict[str, Type[Any]]:
-    """List all subclasses of a given superclass. Return as a dictionary mapping the
-    subclass name to the class.
+    """List all non-abstract subclasses of a given superclass. Return as a dictionary mapping the
+    subclass name to the class. This is recursive, so sub-subclasses will also be returned.
 
     Parameters
     ----------
@@ -72,7 +80,11 @@ def _list_subclasses(superclass: Type[Any]) -> Dict[str, Type[Any]]:
         A dictionary mapping the subclass name to the class.
     """
     return CaseInsensitiveDict(
-        {cls.__name__: cls for cls in superclass.__subclasses__()}
+        {
+            cls.__name__: cls
+            for cls in _all_subclasses(superclass)
+            if not isabstract(cls)
+        }
     )
 
 

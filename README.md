@@ -84,10 +84,10 @@ watcher = taskee.initialize(notifiers="all")
 
 ### Filtering Events
 
-There are a lot of [possible events](#events) that can happen to Earth Engine tasks. By default, `taskee` will notify you when a task completes or fails, but you can specify which events to watch for using the `watch_for` argument.
+There are a lot of [possible events](#events) that can happen to Earth Engine tasks. By default, `taskee` will notify you when a task completes or fails or if `taskee` crashes, but you can specify which events to watch for using the `watch_for` argument.
 
 ```python
-watcher.watch(watch_for=["attempted", "failed", "cancelled"])
+watcher.watch(watch_for=["attempted", "failed", "cancelled", "error"])
 ```
 
 Once again, `all` is a convenient keyword if you want to use all available events.
@@ -116,7 +116,7 @@ watcher = taskee.initalize(logging_level="DEBUG")
 <details>
   <summary><b>Command Line</b></summary></br>
   
-You can also run `taskee` with the command line interface. By default, the command below will watch for `completed` and `failed` events every 15 minutes and notify you with `native` notifications.
+You can also run `taskee` with the command line interface. By default, the command below will watch for `completed`, `failed`, and `error` events every 15 minutes and notify you with `native` notifications.
 
 ```posh
 python -m taskee.cli
@@ -166,3 +166,4 @@ When an Earth Engine task is updated, it creates an event. You can choose which 
 | Completed | A task finished successfully. |
 | Failed | A task fails to complete. |
 | Cancelled | The user cancels the task. |
+| Error | `taskee` crashes. |

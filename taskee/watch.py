@@ -26,7 +26,9 @@ class Watcher:
         self.manager = manager
 
     def watch(
-        self, watch_for=(events.Failed, events.Completed), interval_minutes: int = 15
+        self,
+        watch_for=(events.Failed, events.Completed, events.Error),
+        interval_minutes: int = 15,
     ):
         """
         Parameters
@@ -64,12 +66,9 @@ class Watcher:
                         time.sleep(wait_time.seconds)
 
             except Exception as e:
-                for notifier in self.notifiers:
-                    notifier.send(
-                        title="Oops",
-                        message="Something went wrong and taskee needs to be restarted.",
-                    )
+                self.notify_event(events.Error(), watch_for)
                 raise e
+
             except KeyboardInterrupt:
                 logger.info("Shutting down...")
                 break
@@ -85,24 +84,27 @@ class Watcher:
             if event is None:
                 continue
 
-            event_message = ": ".join([event.title, event.message])
+            self.notify_event(event, watch_for)
 
             if isinstance(event, tuple(watch_for)):
                 changed_tasks.append(task)
-
-                logger.info(event_message)
-
-                for notifier in self.notifiers:
-                    notifier.send(event.title, event.message)
-
-            else:
-                logger.debug(f"Event found, but ignored: {event_message}")
 
         if not changed_tasks:
             logger.info("No events to report.")
 
         else:
             console.print(_create_task_table(changed_tasks, title="Updated Tasks"))
+
+    def notify_event(self, event, watch_for):
+        """Send a notification for an event if it is being watch for."""
+        event_message = ": ".join([event.title, event.message])
+
+        if isinstance(event, tuple(watch_for)):
+            logger.info(event_message)
+            for notifier in self.notifiers:
+                notifier.send(event.title, event.message)
+        else:
+            logger.debug(f"Event found, but ignored: {event_message}")
 
 
 def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> Watcher:
