@@ -2,7 +2,7 @@ import datetime
 from typing import Dict, List
 
 from taskee import events, states
-from taskee.utils import _millis_to_datetime
+from taskee.utils import _millis_to_datetime, _shorten_string
 
 
 class Task:
@@ -17,6 +17,16 @@ class Task:
 
     def __str__(self) -> str:
         return f"<{self.id}>: {self.description} [{self.state}]"
+
+    @property
+    def error_message(self) -> str:
+        if self.state == states.FAILED:
+            return self._status["error_message"]
+        return None
+
+    @property
+    def short_description(self) -> str:
+        return _shorten_string(self.description, 24)
 
     @property
     def state(self) -> str:
@@ -48,7 +58,7 @@ class Task:
             old_attempt, new_attempt = self._status["attempt"], new_status["attempt"]
         # During some states, tasks will not have an attempt value
         except KeyError:
-            old_attempt, new_attempt = 0
+            old_attempt, new_attempt = 0, 0
 
         if old_state != new_state:
             if new_state == states.RUNNING:
@@ -88,3 +98,16 @@ class TaskManager:
             # Update existing tasks
             else:
                 self.tasks[task_id].update(task)
+
+        self._sort_tasks()
+
+    def _sort_tasks(self):
+        """Sort the tasks by placing active tasks first and then sorting by their creation date."""
+        self.tasks = {
+            k: v
+            for k, v in sorted(
+                self.tasks.items(),
+                key=lambda x: [x[1].state in states.ACTIVE, x[1].time_created],
+                reverse=True,
+            )
+        }

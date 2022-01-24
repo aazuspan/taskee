@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
+import humanize
 
 from taskee.utils import _get_subclasses, _list_subclasses
 
@@ -23,8 +24,9 @@ class Failed(Event):
 
     @property
     def message(self):
-        error = self.task.status["error_message"]
-        return f"Task '{self.task.description}' failed with error '{error}'"
+        error = self.task.error_message
+        elapsed = humanize.naturaldelta(self.task.time_elapsed)
+        return f"Task '{self.task.description}' failed with error '{error}' after {elapsed}."
 
 
 class Completed(Event):
@@ -34,7 +36,8 @@ class Completed(Event):
 
     @property
     def message(self):
-        return f"Task '{self.task.description}' completed successfully!"
+        elapsed = humanize.naturaldelta(self.task.time_elapsed)
+        return f"Task '{self.task.description}' completed successfully! It ran for {elapsed}."
 
 
 class Created(Event):
