@@ -3,11 +3,16 @@ import time
 from typing import List, Type
 
 import ee
+import humanize
+import rich
+from rich import box
+from rich.panel import Panel
+from rich.status import Status
 
-from taskee import events
+from taskee import events, states, utils
 from taskee.notifiers.notifier import Notifier, get_notifiers
 from taskee.tasks import TaskManager
-from taskee.utils import _create_task_table, _create_event_table, console, initialize_earthengine, logger
+from taskee.utils import logger
 
 
 class Watcher:
@@ -52,28 +57,27 @@ class Watcher:
             try:
                 elapsed = time.time() - last_checked
 
-                if elapsed > interval_seconds:
-                    self.update(watch_for)
-                    last_checked = time.time()
-
-                else:
+                if elapsed < interval_seconds:
                     wait_time = datetime.timedelta(seconds=interval_seconds - elapsed)
-
-                    if wait_time.seconds > 0:
-                        next_check = datetime.datetime.now() + wait_time
-                        logger.info(f"Next update: {next_check.astimezone():%H:%M:%S}")
+                    next_check = datetime.datetime.now() + wait_time
+                    with Status(
+                        f"[yellow]Next update[/]: {humanize.naturaltime(next_check)} [yellow]({next_check.astimezone():%H:%M:%S})[/]",
+                        spinner="bouncingBar",
+                    ):
                         time.sleep(wait_time.seconds)
+
+                self.update(watch_for)
+                last_checked = time.time()
 
             except Exception as e:
                 self.notify_event(events.Error(), watch_for)
                 raise e
 
             except KeyboardInterrupt:
-                logger.info("Shutting down...")
+                logger.info("[red italic]Shutting down...")
                 break
 
     def update(self, watch_for):
-        logger.debug("Updating tasks...")
         self.manager.update(ee.data.getTaskList())
 
         changed_tasks = []
@@ -88,24 +92,18 @@ class Watcher:
             if isinstance(event, tuple(watch_for)):
                 changed_tasks.append(task)
 
-        if not changed_tasks:
-            logger.info("No events to report.")
+        s = "s" if len(changed_tasks) != 1 else ""
+        logger.info(f"[yellow]{len(changed_tasks)} new event{s} found.")
 
-        else:
+        if len(changed_tasks) > 0:
             events = [task.event for task in changed_tasks]
-            console.print(_create_event_table(events, title="Updated Tasks"))
-
+            rich.print(utils._create_event_table(events, title="Updated Tasks"))
 
     def notify_event(self, event, watch_for):
         """Send a notification for an event if it is being watch for."""
-        event_message = ": ".join([event.title, event.message])
-
         if isinstance(event, tuple(watch_for)):
-            logger.info(event_message)
             for notifier in self.notifiers:
                 notifier.send(event.title, event.message)
-        else:
-            logger.debug(f"Event found, but ignored: {event_message}")
 
 
 def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> Watcher:
@@ -115,7 +113,7 @@ def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> 
     logger.setLevel(logging_level.upper())
 
     logger.debug("Initializing Earth Engine...")
-    initialize_earthengine()
+    utils.initialize_earthengine()
 
     logger.debug("Initializing Task Manager...")
     manager = TaskManager(ee.data.getTaskList())
@@ -127,15 +125,18 @@ def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> 
 
     total_tasks = len(manager.tasks)
     active_tasks = len(
-        [
-            task
-            for task in manager.tasks.values()
-            if task.state in ("RUNNING", "STARTED")
-        ]
+        [task for task in manager.tasks.values() if task.state in states.ACTIVE]
     )
-    logger.info(f"{total_tasks} tasks found. {active_tasks} are active.")
-    console.print(
-        _create_task_table(list(manager.tasks.values()), max_tasks=16, title="Tasks")
+    verb = "is" if active_tasks == 1 else "are"
+
+    header = Panel(
+        f"{total_tasks} tasks found. {active_tasks} {verb} [green]active[/].",
+        title="[bold green]taskee[/]",
+        padding=1,
+        box=box.DOUBLE,
+        width=utils.TERMINAL_WIDTH,
     )
+    rich.print(header)
+    rich.print(utils._create_task_table(list(manager.tasks.values()), max_tasks=16))
 
     return Watcher(notifiers=activated_notifiers, manager=manager)

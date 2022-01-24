@@ -3,8 +3,7 @@ from typing import Dict, List, Set, Type, Union
 
 import humanize
 
-from taskee import utils
-from taskee import colors
+from taskee import colors, utils
 
 
 class Event(ABC):
