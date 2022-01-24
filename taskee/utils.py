@@ -171,13 +171,7 @@ def _create_task_table(
 
     table_tasks = tasks[:max_tasks]
     for task in table_tasks:
-        row_style = (
-            "red"
-            if task.state in states.UNSUCCESSFUL
-            else "blue"
-            if task.state in states.ACTIVE
-            else "green"
-        )
+        row_style = states.STATE_COLORS[task.state]
         if task.state == states.CANCELLED:
             row_style += " strike"
 
@@ -186,6 +180,25 @@ def _create_task_table(
             task.short_description,
             humanize.naturaltime(task.time_created, when=datetime.datetime.utcnow()),
             humanize.naturaldelta(task.time_elapsed),
+            style=row_style,
+        )
+
+    return t
+
+
+def _create_event_table(events: List["Event"], title: str = None) -> Table:
+    """Create a table of tasks."""
+    t = Table(title=title, row_styles=["", "dim"])
+
+    t.add_column("Event", justify="right")
+    t.add_column("Message", justify="right")
+
+    for event in events:
+        row_style = event._color
+
+        t.add_row(
+            event.__class__.__name__,
+            event.message,
             style=row_style,
         )
 

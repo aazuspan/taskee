@@ -7,8 +7,7 @@ import ee
 from taskee import events
 from taskee.notifiers.notifier import Notifier, get_notifiers
 from taskee.tasks import TaskManager
-from taskee.utils import (_create_task_table, console, initialize_earthengine,
-                          logger)
+from taskee.utils import _create_task_table, _create_event_table, console, initialize_earthengine, logger
 
 
 class Watcher:
@@ -93,7 +92,9 @@ class Watcher:
             logger.info("No events to report.")
 
         else:
-            console.print(_create_task_table(changed_tasks, title="Updated Tasks"))
+            events = [task.event for task in changed_tasks]
+            console.print(_create_event_table(events, title="Updated Tasks"))
+
 
     def notify_event(self, event, watch_for):
         """Send a notification for an event if it is being watch for."""
