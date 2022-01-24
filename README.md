@@ -34,6 +34,19 @@ pip install pushbullet.py
 
 Once you're logged in, go to your [Account Settings](https://www.pushbullet.com/#settings), create an Access Token, and copy the API key. The first time you run `taskee.initialize()` with a `pushbullet` notifier, you'll need to enter your API key. That key will be stored locally so you don't have to enter it again.
 
+### 4. Set up notify-send (Linux only)
+Linux users may need to install `notify-send` to enable `native` notifications. Run the following terminal command to check if `notify-send` is working.
+
+```posh
+notify-send 'This is a test'
+```
+
+If the command above didn't work, run the command below.
+
+```posh
+sudo apt install libnotify-bin
+```
+
 ## Usage
 
 <details>
