@@ -1,28 +1,12 @@
 import datetime
 import difflib
-import logging
 import os
 from inspect import isabstract
 from typing import Any, Dict, List, Set, Type, Union
 
 import ee
-import humanize
 from requests.structures import CaseInsensitiveDict
-from rich.logging import RichHandler
-from rich.table import Table
-from rich.text import Text
 
-from taskee import states
-
-logging.basicConfig(
-    format="%(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[RichHandler(show_level=True, show_path=False, markup=True)],
-)
-
-logger = logging.getLogger("taskee")
-
-TERMINAL_WIDTH = 80
 config_path = os.path.expanduser("~/.config/taskee.ini")
 
 
@@ -159,44 +143,3 @@ def _shorten_string(s: str, max_len: int = 10):
     if len(s) > max_len:
         return s[:max_len] + "..."
     return s
-
-
-def _create_task_table(
-    tasks: List["Task"], max_tasks: int = None, title: str = None
-) -> Table:
-    """Create a table of tasks."""
-    t = Table(title=title, row_styles=["", "dim"], width=80)
-
-    t.add_column("State", justify="right")
-    t.add_column("Description", justify="left")
-    t.add_column("Created", justify="right")
-    t.add_column("Elapsed", justify="right")
-
-    table_tasks = tasks[:max_tasks]
-    for task in table_tasks:
-        row_style = states.STATE_COLORS[task.state]
-        if task.state == states.CANCELLED:
-            row_style += " strike"
-
-        t.add_row(
-            task.state,
-            task.description,
-            humanize.naturaltime(task.time_created, when=datetime.datetime.utcnow()),
-            humanize.naturaldelta(task.time_elapsed),
-            style=row_style,
-        )
-
-    return t
-
-
-def _create_event_table(events: List["Event"], title: str = None) -> Table:
-    """Create a table of tasks."""
-    t = Table(title=title, row_styles=["", "dim"], width=80)
-
-    t.add_column("Event", justify="right")
-    t.add_column("Message", justify="left")
-
-    for event in events:
-        t.add_row(Text(event.__class__.__name__, style=event._color), event.message)
-
-    return t

@@ -9,10 +9,11 @@ from rich import box
 from rich.panel import Panel
 from rich.status import Status
 
-from taskee import events, states, utils
+from taskee import events, states, terminal, utils
 from taskee.notifiers.notifier import Notifier, get_notifiers
 from taskee.tasks import TaskManager
-from taskee.utils import logger
+from taskee.terminal.logger import logger
+from taskee.terminal.tables import _create_event_table, _create_task_table
 
 
 class Watcher:
@@ -97,7 +98,7 @@ class Watcher:
 
         if len(changed_tasks) > 0:
             events = [task.event for task in changed_tasks]
-            rich.print(utils._create_event_table(events, title="Updated Tasks"))
+            rich.print(_create_event_table(events, title="Earth Engine Events"))
 
     def notify_event(self, event, watch_for):
         """Send a notification for an event if it is being watch for."""
@@ -128,15 +129,22 @@ def initialize(notifiers: List[Type[Notifier]], logging_level: str = "INFO") -> 
         [task for task in manager.tasks.values() if task.state in states.ACTIVE]
     )
     verb = "is" if active_tasks == 1 else "are"
+    task_prompt = f"[bold yellow]Tasks[/]: {total_tasks} tasks found. {active_tasks} {verb} [green]active[/].\n"
+    notifier_prompt = f"[bold cyan]Notifiers[/]: {len(activated_notifiers)} active notifier{'s' if len(activated_notifiers) != 1 else ''} [green]({', '.join([notif.__name__ for notif in selected_notifiers])})[/]."
+    prompt = task_prompt + notifier_prompt
 
     header = Panel(
-        f"{total_tasks} tasks found. {active_tasks} {verb} [green]active[/].",
+        prompt,
         title="[bold green]taskee[/]",
         padding=1,
         box=box.DOUBLE,
-        width=utils.TERMINAL_WIDTH,
+        width=terminal.settings.TERMINAL_WIDTH,
     )
     rich.print(header)
-    rich.print(utils._create_task_table(list(manager.tasks.values()), max_tasks=16))
+    rich.print(
+        _create_task_table(
+            list(manager.tasks.values()), max_tasks=16, title="Earth Engine Tasks"
+        )
+    )
 
     return Watcher(notifiers=activated_notifiers, manager=manager)

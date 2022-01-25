@@ -1,7 +1,8 @@
 import configparser
 
 from taskee.notifiers.notifier import Notifier
-from taskee.utils import config_path, logger
+from taskee.terminal.logger import logger
+from taskee.utils import config_path
 
 
 class Pushbullet(Notifier):

@@ -1,4 +1,4 @@
-from taskee import colors
+from taskee.terminal import colors
 
 CANCELLED = "CANCELLED"
 CANCEL_REQUESTED = "CANCEL_REQUESTED"
