@@ -1,6 +1,6 @@
 import datetime
 
-from taskee import events, states
+from taskee import events, states, tasks
 from taskee.utils import _datetime_to_millis
 from tests.mock_tasks import MockTask
 
@@ -75,3 +75,19 @@ def test_state():
     """Test that a task's state is correctly retrieved."""
     task = MockTask("CANCEL_REQUESTED")
     assert task.state == states.CANCEL_REQUESTED
+
+def test_task_sorting():
+    """Tasks are auto-sorted by the task manager, with active tasks first and then by
+    creation time. Test that tasks are sorted as expected.
+    """
+    t = [
+        MockTask("COMPLETED", description="old inactive", time_since_creation_ms=5)._status,
+        MockTask("RUNNING", description="older active", time_since_creation_ms=20)._status,
+        MockTask("FAILED", description="new inactive", time_since_creation_ms=0)._status,
+        MockTask("READY", description="newer active", time_since_creation_ms=15)._status,
+        MockTask("CANCEL_REQUESTED", description="very old inactive", time_since_creation_ms=100)._status
+    ]
+    tm = tasks.TaskManager(t)
+    correct_order = ["newer active", "older active", "new inactive", "old inactive", "very old inactive"]
+    actual_order = [task.description for task in tm.tasks.values()]
+    assert actual_order == correct_order
