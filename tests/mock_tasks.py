@@ -19,8 +19,9 @@ class MockTask(Task):
         update_timestamp_ms: int = None,
         time_since_creation_ms=600_000,
         started_after_ms: int = 60_000,
+        error_message: str = "error message",
     ):
-        """Initialize a mock task by passing in specific parameters. These will be used to 
+        """Initialize a mock task by passing in specific parameters. These will be used to
         build a status dictionary matching those created by Earth Engine.
 
         Parameters
@@ -34,13 +35,16 @@ class MockTask(Task):
         task_type : str, default EXPORT_IMAGE
             The type of task, as defined by Earth Engine.
         update_timestamp_ms : int, optional
-            The timestamp in UTC milliseconds of the last task update. If none is provided, 
+            The timestamp in UTC milliseconds of the last task update. If none is provided,
             the current time will be used.
         time_since_creation_ms : int, default 600000
-            The amount of time, in milliseconds, since the task was created. Defaults to 
+            The amount of time, in milliseconds, since the task was created. Defaults to
             10 minutes.
         started_after_ms : int, default 60000
             The delay between the creation time and the starting time. Defaults to 1 minute.
+        error_message : str, default "error message"
+            The error message to assign to Failed and Cancelled tasks. The argument will
+            be ignored for other task types.
 
         Returns
         -------
@@ -72,6 +76,7 @@ class MockTask(Task):
             updated_time=update_timestamp_ms,
             created_time=creation_timestamp_ms,
             started_time=start_timestamp_ms,
+            error_message=error_message,
         )
 
     @staticmethod
@@ -87,6 +92,7 @@ class MockTask(Task):
         updated_time: int,
         created_time: int,
         started_time: int,
+        error_message: str,
     ) -> Dict:
         """Build an Earth Engine-compatible status dictionary from initialized parameters."""
         # These parameters are common to all task types
@@ -104,7 +110,7 @@ class MockTask(Task):
         if state == states.COMPLETED:
             base_obj["destination_uris"] = ["https://drive.google.com/"]
         elif state in [states.FAILED, states.CANCELLED]:
-            base_obj["error_message"] = "Error message!"
+            base_obj["error_message"] = error_message
         elif state == states.READY:
             base_obj["start_timestamp_ms"] = 0
 
