@@ -30,7 +30,7 @@ def _create_task_table(
         t.add_row(
             task.state,
             task.description,
-            humanize.naturaltime(task.time_created, when=datetime.datetime.utcnow()),
+            humanize.naturaltime(task.time_created, when=datetime.datetime.now(tz=datetime.timezone.utc)),
             humanize.naturaldelta(task.time_elapsed),
             style=row_style,
         )
