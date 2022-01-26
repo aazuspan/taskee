@@ -130,7 +130,9 @@ def _get_subclasses(
 
 def _millis_to_datetime(millis: str) -> datetime.datetime:
     """Convert a timestamp in UTC milliseconds (e.g. from Earth Engine) to a datetime object."""
-    return datetime.datetime.utcfromtimestamp(int(millis) / 1000.0)
+    return datetime.datetime.fromtimestamp(
+        int(millis) / 1000.0, tz=datetime.timezone.utc
+    )
 
 
 def _datetime_to_millis(dt: datetime.datetime) -> int:
