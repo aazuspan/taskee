@@ -125,12 +125,11 @@ class MockTask(Task):
 
         return base_obj
 
-    def set_next_status(
+    def get_next_status(
         self, new_state: str = None, retry: bool = False, time_delta: int = 0
     ):
-        """Manually adjust a task's status. The effect of calling this method is equivalent to task.update(),
-        but attributes can be set directly for convenience in testing. As much as possible, new attributes
-        are validated to ensure they could occur in normal usage.
+        """Build the next status dictionary based on requested changes to the task's attributes.
+        As much as possible, new attributes are validated to ensure they could occur in normal usage.
         """
         last_state = self._status["state"]
 
@@ -164,4 +163,4 @@ class MockTask(Task):
 
         new_status.update(update_attrs)
 
-        self.update(new_status)
+        return new_status
