@@ -1,14 +1,17 @@
+import datetime
 from abc import ABC, abstractmethod
 from typing import Dict, List, Set, Type, Union
 
 import humanize
 
 from taskee import utils
-from taskee.terminal import colors
 
 
 class Event(ABC):
     title = "Generic Event"
+
+    def __init__(self):
+        self.time = datetime.datetime.now(tz=datetime.timezone.utc)
 
     @property
     @abstractmethod
@@ -21,6 +24,7 @@ class TaskEvent(Event, ABC):
 
     def __init__(self, task):
         self.task = task
+        super().__init__()
 
 
 class Error(Event):
@@ -28,14 +32,12 @@ class Error(Event):
 
     title = "Oops!"
     message = "Something went wrong and taskee needs to be restarted."
-    _color = colors.COLOR_ERROR
 
 
 class Failed(TaskEvent):
     """A Failed event occurs when a task fails to complete."""
 
     title = "Task Failed"
-    _color = colors.COLOR_ERROR
 
     @property
     def message(self):
@@ -48,7 +50,6 @@ class Completed(TaskEvent):
     """A Completed event occurs when a task completes successfully."""
 
     title = "Task Completed"
-    _color = colors.COLOR_SUCCESS
 
     @property
     def message(self):
@@ -60,7 +61,6 @@ class Created(TaskEvent):
     """A Created event occurs when a new task is created."""
 
     title = "Task Created"
-    _color = colors.COLOR_INFO
 
     @property
     def message(self):
@@ -71,11 +71,10 @@ class Attempted(TaskEvent):
     """An Attempted event occurs when an attempt fails and a new attempt beings."""
 
     title = "Attempt Failed"
-    _color = colors.COLOR_ERROR
 
     @property
     def message(self):
-        n = self.task.status["attempt"]
+        n = self.task._status["attempt"]
         return f"Task '{self.task.description}' attempt {n - 1} failed."
 
 
@@ -83,7 +82,6 @@ class Cancelled(TaskEvent):
     """A Cancelled event occurs when a task is cancelled by the user."""
 
     title = "Task Cancelled"
-    _color = colors.COLOR_ERROR
 
     @property
     def message(self):
@@ -94,7 +92,6 @@ class Started(TaskEvent):
     """A Started event occurs when a ready task begins running."""
 
     title = "Task Started"
-    _color = colors.COLOR_INFO
 
     @property
     def message(self):

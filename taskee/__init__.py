@@ -1,1 +1,1 @@
-from taskee.watch import initialize
+from taskee.taskee import Taskee

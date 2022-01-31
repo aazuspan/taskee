@@ -138,10 +138,3 @@ def _millis_to_datetime(millis: str) -> datetime.datetime:
 def _datetime_to_millis(dt: datetime.datetime) -> int:
     """Convert a UTC datetime to a timestamp in milliseconds"""
     return int(dt.timestamp() * 1000)
-
-
-def _shorten_string(s: str, max_len: int = 10):
-    """Shorten a string by abbreviating it at max_len and adding an ellipse if it was shortened."""
-    if len(s) > max_len:
-        return s[:max_len] + "..."
-    return s

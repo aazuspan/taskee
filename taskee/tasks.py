@@ -2,7 +2,7 @@ import datetime
 from typing import Dict, List
 
 from taskee import events, states
-from taskee.utils import _millis_to_datetime, _shorten_string
+from taskee.utils import _millis_to_datetime
 
 
 class Task:
@@ -23,10 +23,6 @@ class Task:
         if self.state == states.FAILED:
             return self._status["error_message"]
         return None
-
-    @property
-    def short_description(self) -> str:
-        return _shorten_string(self.description, 24)
 
     @property
     def state(self) -> str:
@@ -82,6 +78,11 @@ class TaskManager:
     def __init__(self, tasks: Dict):
         self.tasks = {}
         self.update(tasks)
+
+        # The initial set of tasks should not register Created events.
+        # There's a better way to handle this, but for now I'm just manually suppressing those events.
+        for task in self.tasks.values():
+            task.event = None
 
     def update(self, task_list: List[Dict]) -> None:
         """Update all tasks. Existing tasks will be updated and new tasks will be added to the manager."""

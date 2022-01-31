@@ -1,16 +1,16 @@
 import configparser
 
+from requests.exceptions import ConnectionError
+from rich.prompt import Prompt
+
 from taskee.notifiers.notifier import Notifier
-from taskee.terminal.logger import logger
 from taskee.utils import config_path
 
 
 class Pushbullet(Notifier):
     def __init__(self):
-        logger.debug("Initializing Pushbullet...")
         self.pb = initialize_pushbullet()
 
-    # TODO: Check `push` status code and decide what to do with errors (resend later? Crash? Just log?)
     def send(self, title, message):
         push = self.pb.push_note(title, message)
 
@@ -32,9 +32,12 @@ def initialize_pushbullet() -> "pushbullet.Pushbullet":
         try:
             pb = pushbullet.Pushbullet(api_key)
         except pushbullet.errors.InvalidKeyError:
-            logger.error("Invalid Pushbullet API key...")
             api_key = _request_pushbullet_key()
             store_key = True
+        except ConnectionError:
+            raise ConnectionError(
+                "Failed to connect to Pushbullet! Please make sure you are connected to internet and try again."
+            )
 
     if store_key:
         _store_pushbullet_key(api_key, config_path)
@@ -62,7 +65,7 @@ def _get_stored_pushbullet_key(path: str) -> str:
 
 def _request_pushbullet_key() -> str:
     """Request a Pushbullet API key from the user."""
-    apikey = input("Enter Pushbullet API key to continue:")
+    apikey = Prompt.ask("Enter your [yellow bold]Pushbullet[/] API key to continue")
     return apikey
 
 
@@ -87,5 +90,4 @@ def _store_pushbullet_key(key: str, path: str) -> None:
         config["Pushbullet"] = {"api_key": key}
 
     with open(path, "w") as dst:
-        logger.info(f"Storing Pushbullet API key for future use at {path}.")
         config.write(dst)
