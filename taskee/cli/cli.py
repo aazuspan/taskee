@@ -3,7 +3,7 @@ import click
 from taskee import events
 from taskee.cli import dashboard, log, tree
 from taskee.cli.logger import logger
-from taskee.cli.table import table
+from taskee.cli.tasks import tasks
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
@@ -64,9 +64,9 @@ def start_command(mode, watch_for, notifiers, interval_mins):
         return
 
 
-@main.command(name="table", help="Display a table of current Earth Engine tasks.")
-def table_command():
-    table()
+@main.command(name="tasks", help="Display a table of current Earth Engine tasks.")
+def tasks_command():
+    tasks()
 
 
 @main.command(name="test", help="Send a test notification.")

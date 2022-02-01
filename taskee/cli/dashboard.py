@@ -58,12 +58,14 @@ def start(
 
             # TODO: Set a max number and events to keep. Probably use deque
             tasks = list(t.manager.tasks.values())
-            new_events = [task.event for task in tasks if task.event is not None]
-            if len(new_events) > 1:
-                new_events = sorted(new_events, key=lambda event: event.time)
 
-            for event in new_events:
-                event_log.insert(0, event)
+            if elapsed > interval_seconds:
+                new_events = [task.event for task in tasks if task.event is not None]
+                if len(new_events) > 1:
+                    new_events = sorted(new_events, key=lambda event: event.time)
+
+                for event in new_events:
+                    event_log.insert(0, event)
 
             update_dashboard(
                 tasks=tasks,

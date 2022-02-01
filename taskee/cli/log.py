@@ -29,14 +29,10 @@ def start(
         elapsed = time.time() - last_checked
 
         if elapsed > interval_seconds:
-            # TODO: Remove this if the Earth Engine update is generally fast enough that it's not helpful
             with Status(f"[yellow]Updating tasks...", spinner="bouncingBar"):
-                t._update(watch_for)
+                new_events = t._update(watch_for)
                 last_checked = time.time()
-
-            # TODO: Set a max number and events to keep. Probably use deque
-            tasks = list(t.manager.tasks.values())
-            new_events = [task.event for task in tasks if task.event is not None]
+            
             if len(new_events) > 1:
                 new_events = sorted(new_events, key=lambda event: event.time)
 

@@ -13,10 +13,11 @@ from taskee.tasks import Task
 from taskee.utils import initialize_earthengine
 
 
-def table():
+def tasks():
     with Status("Retrieving tasks from Earth Engine..."):
         initialize_earthengine()
         tasks = [Task(task) for task in ee.data.getTaskList()]
+
         rich.print(create_task_table(tasks))
 
 
@@ -25,7 +26,7 @@ def create_task_table(tasks) -> Table:
     """Create a table of tasks."""
     t = Table(
         title="[bold bright_green]Tasks",
-        box=box.MINIMAL,
+        box=box.SIMPLE_HEAD,
         header_style="bright_green",
         expand=True,
     )
