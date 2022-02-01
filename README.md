@@ -8,7 +8,7 @@
 
 - 🔍 Monitor [Google Earth Engine](https://developers.google.com/earth-engine) tasks created with the Python API and/or the Javascript Code Editor
 - 💻 Native notifications for Linux, Mac, and Windows
-- 📱 Mobile push notifications for Android
+- :speech_balloon: Mobile push notifications for Android
 - :tv: Built-in CLI dashboard
 
 # Setup
