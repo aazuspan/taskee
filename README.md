@@ -1,10 +1,8 @@
 # taskee
 
-![](assets/preview_windows.jpg)
-
-## Description
-
 `taskee` is a command-line tool for monitoring `Google Earth Engine` tasks that can send notifications to your phone or computer to let you know when your tasks finish (or fail 🤫).
+
+![](assets/dashboard.gif)
 
 ## Features
 
@@ -52,11 +50,15 @@ There are two "modes" that `taskee` can run in: `dashboard` and `log`. Both mode
 taskee start dashboard
 ```
 
+![A dashboard showing live-updating tasks and events](assets/dashboard.gif)
+
 `log` is designed to be run in the background and prints minimal logs as events occur.
 
 ```bash
 taskee start log
 ```
+
+![A terminal showing logs of new events.](assets/log.gif)
 
 ### Filtering Events
 
