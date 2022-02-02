@@ -1,7 +1,6 @@
-<img src="assets/logo.png" alt="taskee logo" style="width:140px;"/>
-<hr>
+<img src="assets/logo.png" alt="taskee logo" style="width:180px;"/>
 
-`taskee` is a command-line tool for monitoring [Google Earth Engine](https://developers.google.com/earth-engine) tasks that can send notifications to your phone or computer to let you know when your tasks finish. Or fail. No judgement.
+`taskee` is a command-line tool for monitoring [Google Earth Engine](https://developers.google.com/earth-engine) tasks that can send notifications to your phone or computer to let you know when your tasks finish.
 
 ![](assets/dashboard.gif)
 
