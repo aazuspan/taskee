@@ -1,4 +1,5 @@
-# taskee
+<img src="assets/logo.png" alt="taskee logo" style="width:140px;"/>
+<hr>
 
 `taskee` is a command-line tool for monitoring [Google Earth Engine](https://developers.google.com/earth-engine) tasks that can send notifications to your phone or computer to let you know when your tasks finish. Or fail. No judgement.
 
@@ -115,7 +116,7 @@ taskee start dashboard all
 
 By default, `taskee` will use the `native` notification system built into your computer's operating system. 
 
-![](assets/notification_native.gif)
+![](assets/notification_native_windows.gif)
 
 
 If you want notifications on other devices, set up Pushbullet and then select it with the `-n --notifier` option.
