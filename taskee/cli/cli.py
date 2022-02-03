@@ -1,15 +1,14 @@
 import click
 
 from taskee import events
-from taskee.cli import dashboard, log, tree
-from taskee.cli.tasks import tasks
+from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
 # TODO: Add to Bumpversion or add a module-level version file
 __version__ = "0.0.1"
 
-modes = {"log": log.start, "dashboard": dashboard.start, "tree": tree.start}
+modes = {"log": log.start, "dashboard": dashboard.start}
 
 
 @click.group(help="Monitor Earth Engine tasks and send notifications.")
@@ -65,7 +64,7 @@ def start_command(mode, watch_for, notifiers, interval_mins):
 
 @main.command(name="tasks", help="Display a table of current Earth Engine tasks.")
 def tasks_command():
-    tasks()
+    tasks.tasks()
 
 
 @main.command(name="test", help="Send a test notification.")
@@ -79,16 +78,7 @@ def tasks_command():
     help="One or more notifiers to test.",
 )
 def test_command(notifiers):
-    from taskee.dispatcher import Dispatcher
-
-    log.logger.setLevel("INFO")
-    dispatcher = Dispatcher(notifiers)
-
-    dispatcher.notify(
-        title="Notification Test",
-        message="If you receive this notification, taskee is working!",
-    )
-    log.logger.info("Notification sent!")
+    test.test(notifiers)
 
 
 if __name__ == "__main__":
