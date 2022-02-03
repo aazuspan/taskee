@@ -108,5 +108,5 @@ def test_task_sorting():
         "old inactive",
         "very old inactive",
     ]
-    actual_order = [task.description for task in tm.tasks.values()]
+    actual_order = [task.description for task in tm.tasks]
     assert actual_order == correct_order

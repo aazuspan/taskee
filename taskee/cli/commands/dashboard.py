@@ -43,7 +43,7 @@ def start(
         layout, title="[bold white]taskee", border_style="bright_black", height=36
     )
 
-    tasks = tuple(t.manager.tasks.values())
+    tasks = t.manager.tasks
     new_events = t.manager.events
     # Initialize the dashboard before we start Live so we don't render a preview layout
     update_dashboard(
@@ -64,7 +64,7 @@ def start(
                 last_checked = time.time()
 
             # TODO: Set a max number and events to keep. Probably use deque
-            tasks = tuple(t.manager.tasks.values())
+            tasks = t.manager.tasks
 
             if elapsed > interval_seconds:
                 new_events = t.manager.events

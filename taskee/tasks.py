@@ -76,25 +76,29 @@ class TaskManager:
     """Manager class for handling all Earth Engine tasks."""
 
     def __init__(self, tasks: List[Dict]):
-        self.tasks: Dict = {}
+        self._tasks: Dict = {}
         self.update(tasks)
 
         # The initial set of tasks should not register Created events.
         # There's a better way to handle this, but for now I'm just manually suppressing those events.
-        for task in self.tasks.values():
+        for task in self._tasks.values():
             task.event = None
 
     @property
     def events(self) -> Tuple[events.Event, ...]:
         """Retrieve active events from all tasks, sorted by time."""
-        task_events = [task.event for task in self.tasks]
+        task_events = [task.event for task in self.tasks if task.event is not None]
         if len(task_events) > 1:
             task_events = sorted(task_events, key=lambda event: event.time)
         return tuple(task_events)
 
+    @property
+    def tasks(self) -> Tuple[Task, ...]:
+        return tuple(self._tasks.values())
+
     def update(self, task_list: List[Dict]) -> None:
         """Update all tasks. Existing tasks will be updated and new tasks will be added to the manager."""
-        current_tasks = self.tasks.keys()
+        current_tasks = self._tasks.keys()
 
         for task in task_list:
             task_id = task["id"]
@@ -102,20 +106,20 @@ class TaskManager:
             # Store new tasks
             if task_id not in current_tasks:
                 new_task = Task(task)
-                self.tasks[task_id] = new_task
+                self._tasks[task_id] = new_task
 
             # Update existing tasks
             else:
-                self.tasks[task_id].update(task)
+                self._tasks[task_id].update(task)
 
         self._sort_tasks()
 
     def _sort_tasks(self) -> None:
         """Sort the tasks by placing active tasks first and then sorting by their creation date."""
-        self.tasks = {
+        self._tasks = {
             k: v
             for k, v in sorted(
-                self.tasks.items(),
+                self._tasks.items(),
                 key=lambda x: [x[1].state in states.ACTIVE, x[1].time_created],
                 reverse=True,
             )

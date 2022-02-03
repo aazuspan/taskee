@@ -1,4 +1,4 @@
-from typing import List, Set, Tuple, Type
+from typing import Set, Tuple, Type
 
 import ee  # type: ignore
 
@@ -22,18 +22,14 @@ class Taskee:
         self.manager = TaskManager(ee.data.getTaskList())
         self.dispatcher = Dispatcher(notifiers)
 
-    def _update(self, watch_for: Set[Type[events.Event]]) -> List[events.Event]:
+    def _update(self, watch_for: Set[Type[events.Event]]) -> Tuple[events.Event, ...]:
         """Update tasks and return any events that occured. Dispatch notifications for events of interest."""
         self.manager.update(ee.data.getTaskList())
 
-        new_events = []
-        for task in self.manager.tasks.values():
-            event = task.event
+        events = self.manager.events
 
-            if event is not None:
-                new_events.append(event)
-
+        for event in events:
             if isinstance(event, tuple(watch_for)):
                 self.dispatcher.notify(event.title, event.message)
 
-        return new_events
+        return events
