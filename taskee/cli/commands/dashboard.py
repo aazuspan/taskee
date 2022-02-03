@@ -62,15 +62,14 @@ def start(
 
             if elapsed > interval_seconds:
                 t._update(watch_events)
+
+                new_events = t.manager.events
+                for event in new_events:
+                    event_log.appendleft(event)
+
                 last_checked = time.time()
 
             tasks = t.manager.tasks
-
-            if elapsed > interval_seconds:
-                new_events = t.manager.events
-
-                for event in new_events:
-                    event_log.appendleft(event)
 
             update_dashboard(
                 tasks=tasks,
