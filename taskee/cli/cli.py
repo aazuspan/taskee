@@ -2,7 +2,6 @@ import click
 
 from taskee import events
 from taskee.cli import dashboard, log, tree
-from taskee.cli.logger import logger
 from taskee.cli.tasks import tasks
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
@@ -82,14 +81,14 @@ def tasks_command():
 def test_command(notifiers):
     from taskee.dispatcher import Dispatcher
 
-    logger.setLevel("INFO")
+    log.logger.setLevel("INFO")
     dispatcher = Dispatcher(notifiers)
 
     dispatcher.notify(
         title="Notification Test",
         message="If you receive this notification, taskee is working!",
     )
-    logger.info("Notification sent!")
+    log.logger.info("Notification sent!")
 
 
 if __name__ == "__main__":

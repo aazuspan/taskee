@@ -1,13 +1,22 @@
 import datetime
+import logging
 import time
 from typing import List
 
+from rich.logging import RichHandler
 from rich.status import Status
 
 from taskee import events
-from taskee.cli.logger import logger
 from taskee.cli.styles import get_style
 from taskee.taskee import Taskee
+
+logging.basicConfig(
+    format="%(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[RichHandler(show_level=True, show_path=False, markup=True)],
+)
+
+logger = logging.getLogger("taskee")
 
 
 def start(
@@ -32,7 +41,7 @@ def start(
             with Status(f"[yellow]Updating tasks...", spinner="bouncingBar"):
                 new_events = t._update(watch_for)
                 last_checked = time.time()
-            
+
             if len(new_events) > 1:
                 new_events = sorted(new_events, key=lambda event: event.time)
 
