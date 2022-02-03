@@ -43,7 +43,7 @@ def start(
                 last_checked = time.time()
 
             if len(new_events) > 1:
-                new_events = sorted(new_events, key=lambda event: event.time)
+                new_events = tuple(sorted(new_events, key=lambda event: event.time))
 
             for event in new_events:
                 muted_style = "[dim]" if event.__class__ not in watch_events else ""

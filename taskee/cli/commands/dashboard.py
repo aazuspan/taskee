@@ -1,6 +1,7 @@
 import datetime
 import time
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Type
+from collections import deque
+from typing import TYPE_CHECKING, Deque, Optional, Set, Tuple, Type
 
 import humanize  # type: ignore
 from rich import box
@@ -37,7 +38,7 @@ def start(
     interval_seconds = interval_minutes * 60.0
 
     watch_events = events.get_events(watch_for)
-    event_log: List["Event"] = []
+    event_log: Deque["Event"] = deque(maxlen=MAX_ROWS)
     layout = create_layout()
     window = Panel(
         layout, title="[bold white]taskee", border_style="bright_black", height=36
@@ -63,14 +64,13 @@ def start(
                 t._update(watch_events)
                 last_checked = time.time()
 
-            # TODO: Set a max number and events to keep. Probably use deque
             tasks = t.manager.tasks
 
             if elapsed > interval_seconds:
                 new_events = t.manager.events
 
                 for event in new_events:
-                    event_log.insert(0, event)
+                    event_log.appendleft(event)
 
             update_dashboard(
                 tasks=tasks,
