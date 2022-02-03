@@ -1,4 +1,5 @@
 import configparser
+from typing import TYPE_CHECKING
 
 from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
@@ -6,13 +7,19 @@ from rich.prompt import Prompt
 from taskee.notifiers.notifier import Notifier
 from taskee.utils import config_path
 
+if TYPE_CHECKING:
+    import pushbullet  # type: ignore
+
 
 class Pushbullet(Notifier):
-    def __init__(self):
+    def __init__(self) -> None:
         self.pb = initialize_pushbullet()
 
-    def send(self, title, message):
+    def send(self, title: str, message: str) -> None:
         push = self.pb.push_note(title, message)
+
+
+from typing import Union
 
 
 def initialize_pushbullet() -> "pushbullet.Pushbullet":
@@ -27,7 +34,7 @@ def initialize_pushbullet() -> "pushbullet.Pushbullet":
     api_key = _get_stored_pushbullet_key(config_path)
 
     store_key = False
-    pb = None
+    pb: Union[str, None] = None
     while pb is None:
         try:
             pb = pushbullet.Pushbullet(api_key)
@@ -60,7 +67,7 @@ def _get_stored_pushbullet_key(path: str) -> str:
     try:
         return config["Pushbullet"]["api_key"]
     except KeyError:
-        return None
+        return ""
 
 
 def _request_pushbullet_key() -> str:

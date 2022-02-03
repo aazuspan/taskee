@@ -1,8 +1,8 @@
 import datetime
 import time
-from typing import List, Type
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Type
 
-import humanize
+import humanize  # type: ignore
 from rich import box
 from rich.layout import Layout
 from rich.live import Live
@@ -20,11 +20,15 @@ MAX_ROWS = 20
 TABLE_HEADER_HEIGHT = 6
 BOX_STYLE = box.SIMPLE_HEAD
 
+if TYPE_CHECKING:
+    from taskee.events import Event
+    from taskee.tasks import Task
+
 
 def start(
     t: Taskee,
-    watch_for: List[str] = ["error", "completed", "failed"],
-    interval_minutes: int = 5,
+    watch_for: Tuple[str, ...] = ("error", "completed", "failed"),
+    interval_minutes: float = 5.0,
 ) -> None:
     """Run an indefinite dashboard. This handles scheduling of Earth Engine updates and
     runs a live-updating dashboard of tasks and events as they occur.
@@ -32,20 +36,23 @@ def start(
     last_checked = time.time()
     interval_seconds = interval_minutes * 60.0
 
-    watch_for = events.get_events(watch_for)
-    event_log = []
+    watch_events = events.get_events(watch_for)
+    event_log: List["Event"] = []
     layout = create_layout()
     window = Panel(
         layout, title="[bold white]taskee", border_style="bright_black", height=36
     )
+
+    tasks = tuple(t.manager.tasks.values())
+    new_events = t.manager.events
     # Initialize the dashboard before we start Live so we don't render a preview layout
     update_dashboard(
-        tasks=[],
-        events=[],
+        tasks=tasks,
+        events=new_events,
         layout=layout,
         time_remaining=interval_seconds,
         total_time=interval_seconds,
-        watch_for=None,
+        watch_for=watch_events,
     )
 
     with Live(window):
@@ -53,39 +60,37 @@ def start(
             elapsed = time.time() - last_checked
 
             if elapsed > interval_seconds:
-                t._update(watch_for)
+                t._update(watch_events)
                 last_checked = time.time()
 
             # TODO: Set a max number and events to keep. Probably use deque
-            tasks = list(t.manager.tasks.values())
+            tasks = tuple(t.manager.tasks.values())
 
             if elapsed > interval_seconds:
-                new_events = [task.event for task in tasks if task.event is not None]
-                if len(new_events) > 1:
-                    new_events = sorted(new_events, key=lambda event: event.time)
+                new_events = t.manager.events
 
                 for event in new_events:
                     event_log.insert(0, event)
 
             update_dashboard(
                 tasks=tasks,
-                events=event_log,
+                events=tuple(event_log),
                 layout=layout,
                 time_remaining=interval_seconds - elapsed,
                 total_time=interval_seconds,
-                watch_for=watch_for,
+                watch_for=watch_events,
             )
 
             time.sleep(REFRESH_SECONDS)
 
 
 def update_dashboard(
-    tasks: List["Task"],
-    events: List["Event"],
+    tasks: Tuple["Task", ...],
+    events: Tuple["Event", ...],
     layout: Layout,
-    time_remaining: int,
-    total_time: int,
-    watch_for: List[Type["Event"]],
+    time_remaining: float,
+    total_time: float,
+    watch_for: Set[Type["Event"]],
 ) -> None:
     layout["header"].update(create_header(time_remaining=time_remaining))
     layout["progress"].update(create_progress_bar(time_remaining, total_time))
@@ -112,7 +117,7 @@ def create_layout() -> Layout:
     return layout
 
 
-def create_header(time_remaining: int) -> Panel:
+def create_header(time_remaining: float) -> Table:
     grid = Table.grid(expand=True)
     grid.add_column(justify="left")
     grid.add_column(justify="right")
@@ -124,7 +129,7 @@ def create_header(time_remaining: int) -> Panel:
     return grid
 
 
-def create_progress_bar(time_remaining: int, total_time: int) -> ProgressBar:
+def create_progress_bar(time_remaining: float, total_time: float) -> ProgressBar:
     return ProgressBar(
         total=total_time,
         completed=total_time - time_remaining,
@@ -132,7 +137,11 @@ def create_progress_bar(time_remaining: int, total_time: int) -> ProgressBar:
     )
 
 
-def create_tables(tasks, events, watch_for):
+def create_tables(
+    tasks: Tuple["Task", ...],
+    events: Tuple["Event", ...],
+    watch_for: Set[Type["Event"]],
+) -> Tuple[Table, Table]:
     n_tasks = MAX_ROWS - min(max(len(events), 1), MAX_ROWS // 2)
     n_events = MAX_ROWS - n_tasks
 
@@ -142,7 +151,9 @@ def create_tables(tasks, events, watch_for):
     return task_table, event_table
 
 
-def create_task_table(tasks, max_tasks: int = None) -> Table:
+def create_task_table(
+    tasks: Tuple["Task", ...], max_tasks: Optional[int] = None
+) -> Table:
     """Create a table of tasks."""
     t = Table(
         title="[bold bright_green]Tasks",
@@ -175,7 +186,11 @@ def create_task_table(tasks, max_tasks: int = None) -> Table:
     return t
 
 
-def create_event_table(events, watch_for, max_events: int = None) -> Table:
+def create_event_table(
+    events: Tuple["Event", ...],
+    watch_for: Set[Type["Event"]],
+    max_events: Optional[int] = None,
+) -> Table:
     """Create a table of events."""
     t = Table(
         title="[bold bright_blue]Events",

@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple, Union
 
 from taskee import events, states
 from taskee.utils import _millis_to_datetime
@@ -13,7 +13,7 @@ class Task:
         self.id = obj["id"]
         self.description = obj["description"]
         self.time_created = _millis_to_datetime(obj["creation_timestamp_ms"])
-        self.event = events.Created(self)
+        self.event: Union[events.Event, None] = events.Created(self)
 
     def __str__(self) -> str:
         return f"<{self.id}>: {self.description} [{self.state}]"
@@ -22,7 +22,7 @@ class Task:
     def error_message(self) -> str:
         if self.state == states.FAILED:
             return self._status["error_message"]
-        return None
+        return ""
 
     @property
     def state(self) -> str:
@@ -34,7 +34,7 @@ class Task:
         return _millis_to_datetime(self._status["update_timestamp_ms"])
 
     @property
-    def time_elapsed(self) -> datetime.datetime:
+    def time_elapsed(self) -> datetime.timedelta:
         """Return the time elapsed between the task creation and the last update."""
         return self.time_updated - self.time_created
 
@@ -43,9 +43,9 @@ class Task:
         self.event = self._parse_event(new_status)
         self._status = new_status
 
-    def _parse_event(self, new_status: Dict) -> events.Event:
+    def _parse_event(self, new_status: Dict) -> Union[None, events.Event]:
         """Take the updated status dictionary and identify if an Event occured."""
-        event = None
+        event: Union[None, events.Event] = None
 
         old_state = self._status["state"]
         new_state = new_status["state"]
@@ -75,14 +75,22 @@ class Task:
 class TaskManager:
     """Manager class for handling all Earth Engine tasks."""
 
-    def __init__(self, tasks: Dict):
-        self.tasks = {}
+    def __init__(self, tasks: List[Dict]):
+        self.tasks: Dict = {}
         self.update(tasks)
 
         # The initial set of tasks should not register Created events.
         # There's a better way to handle this, but for now I'm just manually suppressing those events.
         for task in self.tasks.values():
             task.event = None
+
+    @property
+    def events(self) -> Tuple[events.Event, ...]:
+        """Retrieve active events from all tasks, sorted by time."""
+        task_events = [task.event for task in self.tasks]
+        if len(task_events) > 1:
+            task_events = sorted(task_events, key=lambda event: event.time)
+        return tuple(task_events)
 
     def update(self, task_list: List[Dict]) -> None:
         """Update all tasks. Existing tasks will be updated and new tasks will be added to the manager."""
@@ -102,7 +110,7 @@ class TaskManager:
 
         self._sort_tasks()
 
-    def _sort_tasks(self):
+    def _sort_tasks(self) -> None:
         """Sort the tasks by placing active tasks first and then sorting by their creation date."""
         self.tasks = {
             k: v

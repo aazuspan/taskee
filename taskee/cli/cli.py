@@ -1,19 +1,19 @@
-import click
+from typing import Tuple
+
+import click  # type: ignore
 
 from taskee import events
 from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
-# TODO: Add to Bumpversion or add a module-level version file
-__version__ = "0.0.1"
-
+version = "0.0.1"
 modes = {"log": log.start, "dashboard": dashboard.start}
 
 
 @click.group(help="Monitor Earth Engine tasks and send notifications.")
-@click.version_option(__version__, prog_name="taskee")
-def main():
+@click.version_option(version, prog_name="taskee")
+def main() -> None:
     return
 
 
@@ -44,8 +44,13 @@ def main():
     default=5.0,
     help="Minutes between queries to Earth Engine for task updates.",
 )
-def start_command(mode, watch_for, notifiers, interval_mins):
-    if not watch_for:
+def start_command(
+    mode: str,
+    watch_for: Tuple[str, ...],
+    notifiers: Tuple[str, ...],
+    interval_mins: float,
+) -> None:
+    if len(watch_for) == 0:
         watch_for = ("completed", "failed", "error")
 
     mode_func = modes[mode]
@@ -63,7 +68,7 @@ def start_command(mode, watch_for, notifiers, interval_mins):
 
 
 @main.command(name="tasks", help="Display a table of current Earth Engine tasks.")
-def tasks_command():
+def tasks_command() -> None:
     tasks.tasks()
 
 
@@ -77,7 +82,7 @@ def tasks_command():
     type=click.Choice(notifier.list_notifiers().keys(), case_sensitive=False),
     help="One or more notifiers to test.",
 )
-def test_command(notifiers):
+def test_command(notifiers: Tuple[str, ...]) -> None:
     test.test(notifiers)
 
 

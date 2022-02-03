@@ -2,8 +2,12 @@ import datetime
 
 import pytest
 
-from taskee.utils import (_datetime_to_millis, _get_subclasses,
-                          _list_subclasses, _millis_to_datetime)
+from taskee.utils import (
+    _datetime_to_millis,
+    _get_subclasses,
+    _list_subclasses,
+    _millis_to_datetime,
+)
 
 
 class MockClass:
@@ -30,29 +34,10 @@ def test_get_subclasses_from_strings():
     assert subclasses == {MockSubclassOne, MockSubclassTwo}
 
 
-def test_get_subclasses_from_classes():
-    """Test that we can get subclasses using their classes."""
-    subclasses = _get_subclasses([MockSubclassOne, MockSubclassTwo], MockClass)
-    assert subclasses == {MockSubclassOne, MockSubclassTwo}
-
-
-def test_get_subclasses_from_single_string():
-    """Test that we can get one subclass from a single string."""
-    subclasses = _get_subclasses("MockSubclassOne", MockClass)
-    assert subclasses == {MockSubclassOne}
-
-
 def test_get_all_subclasses():
     """Test that we can get all subclasses using keyword 'all'."""
-    subclasses = _get_subclasses("all", MockClass)
+    subclasses = _get_subclasses(["all"], MockClass)
     assert subclasses == {MockSubclassOne, MockSubclassTwo}
-
-
-def test_get_subclasses_fails_with_bad_type():
-    """Test that _get_subclasses raises an AttributeError when a type other than string and the subclass are passed."""
-    for invalid_input in [1, {"this": "that"}, 5.2]:
-        with pytest.raises(AttributeError, match="Choices must be"):
-            _get_subclasses([invalid_input], MockClass)
 
 
 def test_get_subclasses_gives_close_match():

@@ -1,7 +1,7 @@
 import datetime
 import logging
 import time
-from typing import List
+from typing import Tuple
 
 from rich.logging import RichHandler
 from rich.status import Status
@@ -21,8 +21,8 @@ logger = logging.getLogger("taskee")
 
 def start(
     t: Taskee,
-    watch_for: List[str] = ["error", "completed", "failed"],
-    interval_minutes: int = 5,
+    watch_for: Tuple[str, ...] = ("error", "completed", "failed"),
+    interval_minutes: float = 5.0,
 ) -> None:
     """Run an indefinite logger. This handles scheduling of Earth Engine updates and
     logs events as they occur.
@@ -32,21 +32,21 @@ def start(
     last_checked = time.time()
     interval_seconds = interval_minutes * 60.0
 
-    watch_for = events.get_events(watch_for)
+    watch_events = events.get_events(watch_for)
 
     while True:
         elapsed = time.time() - last_checked
 
         if elapsed > interval_seconds:
             with Status(f"[yellow]Updating tasks...", spinner="bouncingBar"):
-                new_events = t._update(watch_for)
+                new_events = t._update(watch_events)
                 last_checked = time.time()
 
             if len(new_events) > 1:
                 new_events = sorted(new_events, key=lambda event: event.time)
 
             for event in new_events:
-                muted_style = "[dim]" if event.__class__ not in watch_for else ""
+                muted_style = "[dim]" if event.__class__ not in watch_events else ""
                 style = get_style(event.__class__)
                 logger.info(
                     f"[{style.color}]{style.emoji} {event.__class__.__name__}[/]: {muted_style}{event.message}"

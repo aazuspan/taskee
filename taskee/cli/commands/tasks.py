@@ -1,7 +1,8 @@
 import datetime
+from typing import Tuple
 
-import ee
-import humanize
+import ee  # type: ignore
+import humanize  # type: ignore
 import rich
 from rich import box
 from rich.status import Status
@@ -13,16 +14,16 @@ from taskee.tasks import Task
 from taskee.utils import initialize_earthengine
 
 
-def tasks():
+def tasks() -> None:
     with Status("Retrieving tasks from Earth Engine..."):
         initialize_earthengine()
         tasks = [Task(task) for task in ee.data.getTaskList()]
 
-        rich.print(create_task_table(tasks))
+        rich.print(create_task_table(tuple(tasks)))
 
 
 # TODO: Ideally reduce the repitition between this and the dashboard, but maybe that's not feasible
-def create_task_table(tasks) -> Table:
+def create_task_table(tasks: Tuple[Task, ...]) -> Table:
     """Create a table of tasks."""
     t = Table(
         title="[bold bright_green]Tasks",

@@ -1,28 +1,31 @@
 import datetime
 from abc import ABC, abstractmethod
-from typing import Dict, List, Set, Type, Union
+from typing import TYPE_CHECKING, Mapping, Set, Tuple, Type
 
-import humanize
+import humanize  # type: ignore
 
 from taskee import utils
+
+if TYPE_CHECKING:
+    from taskee.tasks import Task
 
 
 class Event(ABC):
     title = "Generic Event"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.time = datetime.datetime.now(tz=datetime.timezone.utc)
 
     @property
     @abstractmethod
-    def message(self):
-        pass
+    def message(self) -> str:
+        return ""
 
 
 class TaskEvent(Event, ABC):
     """A Task Event is a type of event originating from an Earth Engine task."""
 
-    def __init__(self, task):
+    def __init__(self, task: "Task"):
         self.task = task
         super().__init__()
 
@@ -40,7 +43,7 @@ class Failed(TaskEvent):
     title = "Task Failed"
 
     @property
-    def message(self):
+    def message(self) -> str:
         error = self.task.error_message
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
         return f"Task '{self.task.description}' failed with error '{error}' after {elapsed}."
@@ -52,7 +55,7 @@ class Completed(TaskEvent):
     title = "Task Completed"
 
     @property
-    def message(self):
+    def message(self) -> str:
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
         return f"Task '{self.task.description}' completed successfully! It ran for {elapsed}."
 
@@ -63,7 +66,7 @@ class Created(TaskEvent):
     title = "Task Created"
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' was created."
 
 
@@ -73,7 +76,7 @@ class Attempted(TaskEvent):
     title = "Attempt Failed"
 
     @property
-    def message(self):
+    def message(self) -> str:
         n = self.task._status["attempt"]
         return f"Task '{self.task.description}' attempt {n - 1} failed."
 
@@ -84,7 +87,7 @@ class Cancelled(TaskEvent):
     title = "Task Cancelled"
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' was cancelled."
 
 
@@ -94,11 +97,11 @@ class Started(TaskEvent):
     title = "Task Started"
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' has started processing."
 
 
-def list_events() -> Dict[str, Type["Event"]]:
+def list_events() -> Mapping[str, Type["Event"]]:
     """List all Event subclasses. Return as a dictionary mapping the subclass name to the
     class.
 
@@ -110,13 +113,13 @@ def list_events() -> Dict[str, Type["Event"]]:
     return utils._list_subclasses(Event)
 
 
-def get_events(names: List[Union[str, Type[Event]]]) -> Set[Type[Event]]:
+def get_events(names: Tuple[str, ...]) -> Set[Type[Event]]:
     """Retrieve a set of subclasses of Event.
 
     Parameters
     ----------
-    names : List[Union[str, Type[Event]]]
-        A list of names or classes of Events to retrieve.
+    names : Tuple[str, ...]
+        A list of names of Events to retrieve.
 
     Returns
     -------

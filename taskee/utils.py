@@ -2,9 +2,9 @@ import datetime
 import difflib
 import os
 from inspect import isabstract
-from typing import Any, Dict, List, Set, Type, Union
+from typing import Any, List, Mapping, Set, Tuple, Type
 
-import ee
+import ee  # type: ignore
 from requests.structures import CaseInsensitiveDict
 
 config_path = os.path.expanduser("~/.config/taskee.ini")
@@ -45,14 +45,14 @@ def _get_case_insensitive_close_matches(
     return [p for p in possibilities if p.lower() in lower_matches]
 
 
-def _all_subclasses(cls):
+def _all_subclasses(cls: Type[Any]) -> Set[Type[Any]]:
     """Recursively find all subclasses of a given class."""
     return set(cls.__subclasses__()).union(
         [s for c in cls.__subclasses__() for s in _all_subclasses(c)]
     )
 
 
-def _list_subclasses(superclass: Type[Any]) -> Dict[str, Type[Any]]:
+def _list_subclasses(superclass: Type[Any]) -> Mapping[str, Type[Any]]:
     """List all non-abstract subclasses of a given superclass. Return as a dictionary mapping the
     subclass name to the class. This is recursive, so sub-subclasses will also be returned.
 
@@ -75,15 +75,13 @@ def _list_subclasses(superclass: Type[Any]) -> Dict[str, Type[Any]]:
     )
 
 
-def _get_subclasses(
-    names: List[Union[str, Type[Any]]], superclass: Type[Any]
-) -> Set[Type[Any]]:
+def _get_subclasses(names: Tuple[str, ...], superclass: Type[Any]) -> Set[Type[Any]]:
     """Retrieve a set of subclasses of a given superclass.
 
     Parameters
     ----------
-    names : List[Union[str, Type[Any]]]
-        A list of names or classes to retrieve from the superclass.
+    names : Tuple[str, ...]
+        A tuple of subclass names to retrieve from the superclass.
     superclass : Type[Any]
         The superclass to retrieve subclasses of.
 
@@ -92,9 +90,6 @@ def _get_subclasses(
     Set[Type[Any]]
         A set of subclasses of the superclass.
     """
-    # Allow single values to be passed
-    names = [names] if not isinstance(names, (list, tuple)) else names
-
     options = _list_subclasses(superclass)
     keys = list(options.keys())
 
@@ -104,26 +99,15 @@ def _get_subclasses(
     selected = []
 
     for name in names:
-        if isinstance(name, str):
-            try:
-                selected.append(options[name])
-            except KeyError:
-                close_matches = _get_case_insensitive_close_matches(name, keys, n=3)
-                hint = (
-                    " Close matches: {}.".format(close_matches) if close_matches else ""
-                )
+        try:
+            selected.append(options[name])
+        except KeyError:
+            close_matches = _get_case_insensitive_close_matches(name, keys, n=3)
+            hint = " Close matches: {}.".format(close_matches) if close_matches else ""
 
-                raise AttributeError(
-                    f'"{name}" is not a supported {superclass.__name__} type. Choose from {keys}.{hint}'
-                )
-        else:
-            try:
-                if issubclass(name, superclass):
-                    selected.append(name)
-            except TypeError:
-                raise AttributeError(
-                    f"Choices must be strings or subclasses of {superclass.__name__}, not {type(name).__name__}."
-                )
+            raise AttributeError(
+                f'"{name}" is not a supported {superclass.__name__} type. Choose from {keys}.{hint}'
+            )
 
     return set(selected)
 
