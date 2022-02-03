@@ -26,10 +26,10 @@ class Taskee:
         """Update tasks and return any events that occured. Dispatch notifications for events of interest."""
         self.manager.update(ee.data.getTaskList())
 
-        events = self.manager.events
+        new_events = self.manager.events
 
-        for event in events:
+        for event in new_events:
             if isinstance(event, tuple(watch_for)):
                 self.dispatcher.notify(event.title, event.message)
 
-        return events
+        return new_events
