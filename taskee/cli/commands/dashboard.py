@@ -127,7 +127,7 @@ class Dashboard:
         )
 
     def create_tables(self) -> Tuple[Table, Table]:
-        n_tasks = MAX_ROWS - min(max(len(self.t.manager.events), 1), MAX_ROWS // 2)
+        n_tasks = MAX_ROWS - min(max(len(self.event_log), 1), MAX_ROWS // 2)
         n_events = MAX_ROWS - n_tasks
 
         task_table = self.create_task_table(n_tasks)
