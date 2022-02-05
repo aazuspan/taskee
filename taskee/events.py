@@ -14,7 +14,7 @@ class Event(ABC):
     title = "Generic Event"
 
     def __init__(self) -> None:
-        self.time = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.time = datetime.datetime.now()
 
     @property
     @abstractmethod

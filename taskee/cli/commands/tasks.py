@@ -40,9 +40,7 @@ def create_task_table(tasks: Tuple[Task, ...]) -> Table:
     for task in tasks:
         state_style = get_style(task.state)
         dim_style = "[dim]" if task.state not in states.ACTIVE else ""
-        time_created = humanize.naturaltime(
-            task.time_created, when=datetime.datetime.now(tz=datetime.timezone.utc)
-        )
+        time_created = humanize.naturaltime(task.time_created)
         time_elapsed = humanize.naturaldelta(task.time_elapsed)
 
         t.add_row(

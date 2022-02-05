@@ -152,9 +152,7 @@ class Dashboard:
         for task in self.t.manager.tasks[:max_tasks]:
             state_style = get_style(task.state)
             dim_style = "[dim]" if task.state not in states.ACTIVE else ""
-            time_created = humanize.naturaltime(
-                task.time_created, when=datetime.datetime.now(tz=datetime.timezone.utc)
-            )
+            time_created = humanize.naturaltime(task.time_created)
             time_elapsed = humanize.naturaldelta(task.time_elapsed)
 
             t.add_row(
@@ -180,9 +178,7 @@ class Dashboard:
         t.add_column("Time", justify="right")
 
         for event in tuple(self.event_log)[:max_events]:
-            event_time = humanize.naturaltime(
-                event.time, when=datetime.datetime.now(tz=datetime.timezone.utc)
-            )
+            event_time = humanize.naturaltime(event.time)
             event_style = get_style(event.__class__)
             event_name = event.__class__.__name__
             muted_style = "[dim]" if event.__class__ not in self.watch_events else ""

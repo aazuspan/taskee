@@ -58,7 +58,7 @@ def test_time_elapsed():
 
 def test_time_updated():
     """Test that a task's time_updated is correctly retrieved"""
-    dt = datetime.datetime(year=1970, month=1, day=1, tzinfo=datetime.timezone.utc)
+    dt = datetime.datetime(year=1970, month=1, day=1)
     ms = _datetime_to_millis(dt)
     task = MockTask("READY", update_timestamp_ms=ms)
     assert task.time_updated == dt

@@ -2,7 +2,7 @@ import datetime
 import difflib
 import os
 from inspect import isabstract
-from typing import Any, List, Mapping, Set, Tuple, Type
+from typing import Any, List, Mapping, Optional, Set, Tuple, Type
 
 import ee  # type: ignore
 from requests.structures import CaseInsensitiveDict
@@ -112,13 +112,13 @@ def _get_subclasses(names: Tuple[str, ...], superclass: Type[Any]) -> Set[Type[A
     return set(selected)
 
 
-def _millis_to_datetime(millis: str) -> datetime.datetime:
-    """Convert a timestamp in UTC milliseconds (e.g. from Earth Engine) to a datetime object."""
-    return datetime.datetime.fromtimestamp(
-        int(millis) / 1000.0, tz=datetime.timezone.utc
-    )
+def _millis_to_datetime(
+    millis: str, tz: Optional[datetime.timezone] = None
+) -> datetime.datetime:
+    """Convert a timestamp in milliseconds (e.g. from Earth Engine) to a datetime object."""
+    return datetime.datetime.fromtimestamp(int(millis) / 1000.0, tz=tz)
 
 
 def _datetime_to_millis(dt: datetime.datetime) -> int:
-    """Convert a UTC datetime to a timestamp in milliseconds"""
+    """Convert a datetime to a timestamp in milliseconds"""
     return int(dt.timestamp() * 1000)
