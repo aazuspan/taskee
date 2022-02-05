@@ -1,4 +1,3 @@
-import datetime
 import time
 from collections import deque
 from typing import TYPE_CHECKING, Deque, Optional, Tuple
@@ -113,7 +112,8 @@ class Dashboard:
         grid.add_column(justify="left")
         grid.add_column(justify="right")
         grid.add_row(
-            f"[italic]Next update in {humanize.naturaldelta(self.time_remaining)}...[/]",
+            "[italic]Next update in"
+            f" {humanize.naturaldelta(self.time_remaining)}...[/]",
             Text("Press CTRL + C to exit...", style="dim"),
         )
 

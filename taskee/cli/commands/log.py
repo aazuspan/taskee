@@ -49,7 +49,8 @@ def start(
                 muted_style = "[dim]" if event.__class__ not in watch_events else ""
                 style = get_style(event.__class__)
                 logger.info(
-                    f"[{style.color}]{style.emoji} {event.__class__.__name__}[/]: {muted_style}{event.message}"
+                    f"[{style.color}]{style.emoji} {event.__class__.__name__}[/]:"
+                    f" {muted_style}{event.message}"
                 )
 
         else:

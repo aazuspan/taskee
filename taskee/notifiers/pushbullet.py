@@ -1,5 +1,5 @@
 import configparser
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
@@ -19,16 +19,14 @@ class Pushbullet(Notifier):
         push = self.pb.push_note(title, message)
 
 
-from typing import Union
-
-
 def initialize_pushbullet() -> "pushbullet.Pushbullet":
     """Initialize the Pushbullet API and return a Pushbullet object."""
     try:
         import pushbullet
     except ImportError:
         raise ImportError(
-            "The `pushbullet` package must be installed to use the Pushbullet notifier. Run `pip install pushbullet.py` to install."
+            "The `pushbullet` package must be installed to use the Pushbullet notifier."
+            " Run `pip install pushbullet.py` to install."
         )
 
     api_key = _get_stored_pushbullet_key(config_path)
@@ -43,7 +41,8 @@ def initialize_pushbullet() -> "pushbullet.Pushbullet":
             store_key = True
         except ConnectionError:
             raise ConnectionError(
-                "Failed to connect to Pushbullet! Please make sure you are connected to internet and try again."
+                "Failed to connect to Pushbullet! Please make sure you are connected to"
+                " internet and try again."
             )
 
     if store_key:

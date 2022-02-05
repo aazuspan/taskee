@@ -8,7 +8,9 @@ from taskee.tasks import TaskManager
 
 
 class Taskee:
-    """The Taskee object schedules and handles task updates."""
+    """The Taskee object is the primary interface to the taskee library. It connects the task manager, which
+    tracks tasks and events, to the dispatcher, which distributes notifications. The Taskee object is the
+    only direct point of contact with Earth Engine."""
 
     def __init__(self, notifiers: Tuple[str, ...] = ("native",)):
 
