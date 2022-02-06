@@ -22,7 +22,6 @@ def tasks() -> None:
         rich.print(create_task_table(tuple(tasks)))
 
 
-# TODO: Ideally reduce the repitition between this and the dashboard, but maybe that's not feasible
 def create_task_table(tasks: Tuple[Task, ...]) -> Table:
     """Create a table of tasks."""
     t = Table(
