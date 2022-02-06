@@ -15,8 +15,9 @@ from taskee.utils import initialize_earthengine
 
 
 def tasks() -> None:
-    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
-        initialize_earthengine()
+    initialize_earthengine()
+
+    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):    
         tasks = [Task(task) for task in ee.data.getTaskList()]
 
         rich.print(create_task_table(tuple(tasks)))
