@@ -44,9 +44,15 @@ Run the setup steps below as needed.
 `taskee` offers a few different commands which you can see by running `taskee --help`.
 
 ```bash
-Usage: python -m taskee.cli.cli [OPTIONS] COMMAND [ARGS]...
+Usage: taskee [OPTIONS] COMMAND [ARGS]...
 
-  Monitor Earth Engine tasks and send notifications.
+  Monitor Earth Engine tasks and send notifications when they change states.
+
+  Examples
+      $ taskee test
+      $ taskee tasks
+      $ taskee start log
+      $ taskee start dashboard failed completed -n pushbullet -i 0.5
 
 Options:
   --version  Show the version and exit.
@@ -55,8 +61,7 @@ Options:
 Commands:
   start  Start running the notification system.
   tasks  Display a table of current Earth Engine tasks.
-  test   Send a test notification.
-
+  test   Send test notifications.
 ```
 
 ## Starting taskee
