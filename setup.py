@@ -2,7 +2,7 @@ from setuptools import find_packages, setup  # type: ignore
 
 version = "0.0.1"
 
-requirements = ["earthengine-api", "rich", "humanize", "notifypy", "requests", "click"]
+requirements = ["earthengine-api", "rich", "humanize", "notify-py", "requests", "click"]
 test_requirements = ["pytest"]
 dev_requirements = [
     "pre-commit",
@@ -15,7 +15,7 @@ dev_requirements = [
 ] + test_requirements
 extras_require = {"dev": dev_requirements, "test": test_requirements}
 
-with open("README.md") as readme_file:
+with open("README.md", encoding="utf8") as readme_file:
     readme = readme_file.read()
 
 setup(
@@ -38,6 +38,6 @@ setup(
     long_description_content_type="text/markdown",
     entry_points="""
         [console_scripts]
-        taskee=taskee.cli.cli:main
+        taskee=taskee.cli.cli:taskee
     """,
 )
