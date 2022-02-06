@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup  # type: ignore
 
-version = "0.0.1"
+version = "0.0.2"
 
 requirements = ["earthengine-api", "rich", "humanize", "notify-py", "requests", "click"]
 test_requirements = ["pytest"]

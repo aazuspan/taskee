@@ -7,7 +7,7 @@ from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
-version = "0.0.1"
+version = "0.0.2"
 modes = {"log": log.start, "dashboard": dashboard.start}
 
 
