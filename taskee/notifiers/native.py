@@ -9,7 +9,9 @@ class Native(Notifier):
     def send(self, title: str, message: str) -> None:
         notification = notifypy.Notify()
         notification.application_name = "taskee"
-        notification.icon = os.path.join("taskee", "notifiers", "taskee.png")
+        notification.icon = os.path.join(
+            os.path.dirname(__file__), "icons", "taskee.png"
+        )
         notification.title = title
         notification.message = message
         notification.send()

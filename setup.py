@@ -36,6 +36,7 @@ setup(
     test_suite="tests",
     packages=find_packages(),
     long_description_content_type="text/markdown",
+    include_package_data=True,
     entry_points="""
         [console_scripts]
         taskee=taskee.cli.cli:taskee
