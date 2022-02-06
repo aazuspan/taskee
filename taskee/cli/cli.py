@@ -11,13 +11,22 @@ version = "0.0.1"
 modes = {"log": log.start, "dashboard": dashboard.start}
 
 
-@click.group(help="Monitor Earth Engine tasks and send notifications.")
+@click.group()
 @click.version_option(version, prog_name="taskee")
-def main() -> None:
+def taskee() -> None:
+    """Monitor Earth Engine tasks and send notifications when they change states.
+
+    \b
+    Examples
+        $ taskee test
+        $ taskee tasks
+        $ taskee start log
+        $ taskee start dashboard failed completed -n pushbullet -i 0.5
+    """
     return
 
 
-@main.command(name="start", help="Start running the notification system.")
+@taskee.command(name="start")
 @click.argument("mode", nargs=1, type=click.Choice(choices=modes.keys()))
 @click.argument(
     "watch_for",
@@ -50,6 +59,14 @@ def start_command(
     notifiers: Tuple[str, ...],
     interval_mins: float,
 ) -> None:
+    """Start running the notification system. Select a mode (default native)
+    and one or more event types to watch for (or all).
+
+    \b
+    Examples
+        $ taskee start dashboard failed completed -n pushbullet -i 5
+        $ taskee start log all
+    """
     if len(watch_for) == 0:
         watch_for = ("completed", "failed", "error")
 
@@ -67,12 +84,13 @@ def start_command(
         return
 
 
-@main.command(name="tasks", help="Display a table of current Earth Engine tasks.")
+@taskee.command(name="tasks")
 def tasks_command() -> None:
+    """Display a table of current Earth Engine tasks."""
     tasks.tasks()
 
 
-@main.command(name="test", help="Send a test notification.")
+@taskee.command(name="test", short_help="Send test notifications.")
 @click.option(
     "notifiers",
     "-n",
@@ -83,8 +101,15 @@ def tasks_command() -> None:
     help="One or more notifiers to test.",
 )
 def test_command(notifiers: Tuple[str, ...]) -> None:
+    """
+    Send test notifications to selected notifiers (default native).
+
+    \b
+    Examples
+        $ taskee test -n all
+    """
     test.test(notifiers)
 
 
 if __name__ == "__main__":
-    main()
+    taskee()
