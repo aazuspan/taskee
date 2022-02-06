@@ -15,7 +15,7 @@ from taskee.utils import initialize_earthengine
 
 
 def tasks() -> None:
-    with Status("Retrieving tasks from Earth Engine..."):
+    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
         initialize_earthengine()
         tasks = [Task(task) for task in ee.data.getTaskList()]
 
