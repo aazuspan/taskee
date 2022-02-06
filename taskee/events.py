@@ -1,26 +1,33 @@
+import datetime
 from abc import ABC, abstractmethod
-from typing import Dict, List, Set, Type, Union
+from typing import TYPE_CHECKING, Mapping, Set, Tuple, Type
 
-import humanize
+import humanize  # type: ignore
 
 from taskee import utils
-from taskee.terminal import colors
+
+if TYPE_CHECKING:
+    from taskee.tasks import Task
 
 
 class Event(ABC):
     title = "Generic Event"
 
+    def __init__(self) -> None:
+        self.time = datetime.datetime.now()
+
     @property
     @abstractmethod
-    def message(self):
-        pass
+    def message(self) -> str:
+        return ""
 
 
 class TaskEvent(Event, ABC):
     """A Task Event is a type of event originating from an Earth Engine task."""
 
-    def __init__(self, task):
+    def __init__(self, task: "Task"):
         self.task = task
+        super().__init__()
 
 
 class Error(Event):
@@ -28,17 +35,15 @@ class Error(Event):
 
     title = "Oops!"
     message = "Something went wrong and taskee needs to be restarted."
-    _color = colors.COLOR_ERROR
 
 
 class Failed(TaskEvent):
     """A Failed event occurs when a task fails to complete."""
 
     title = "Task Failed"
-    _color = colors.COLOR_ERROR
 
     @property
-    def message(self):
+    def message(self) -> str:
         error = self.task.error_message
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
         return f"Task '{self.task.description}' failed with error '{error}' after {elapsed}."
@@ -48,10 +53,9 @@ class Completed(TaskEvent):
     """A Completed event occurs when a task completes successfully."""
 
     title = "Task Completed"
-    _color = colors.COLOR_SUCCESS
 
     @property
-    def message(self):
+    def message(self) -> str:
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
         return f"Task '{self.task.description}' completed successfully! It ran for {elapsed}."
 
@@ -60,10 +64,9 @@ class Created(TaskEvent):
     """A Created event occurs when a new task is created."""
 
     title = "Task Created"
-    _color = colors.COLOR_INFO
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' was created."
 
 
@@ -71,11 +74,10 @@ class Attempted(TaskEvent):
     """An Attempted event occurs when an attempt fails and a new attempt beings."""
 
     title = "Attempt Failed"
-    _color = colors.COLOR_ERROR
 
     @property
-    def message(self):
-        n = self.task.status["attempt"]
+    def message(self) -> str:
+        n = self.task._status["attempt"]
         return f"Task '{self.task.description}' attempt {n - 1} failed."
 
 
@@ -83,10 +85,9 @@ class Cancelled(TaskEvent):
     """A Cancelled event occurs when a task is cancelled by the user."""
 
     title = "Task Cancelled"
-    _color = colors.COLOR_ERROR
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' was cancelled."
 
 
@@ -94,14 +95,13 @@ class Started(TaskEvent):
     """A Started event occurs when a ready task begins running."""
 
     title = "Task Started"
-    _color = colors.COLOR_INFO
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Task '{self.task.description}' has started processing."
 
 
-def list_events() -> Dict[str, Type["Event"]]:
+def list_events() -> Mapping[str, Type["Event"]]:
     """List all Event subclasses. Return as a dictionary mapping the subclass name to the
     class.
 
@@ -113,13 +113,13 @@ def list_events() -> Dict[str, Type["Event"]]:
     return utils._list_subclasses(Event)
 
 
-def get_events(names: List[Union[str, Type[Event]]]) -> Set[Type[Event]]:
+def get_events(names: Tuple[str, ...]) -> Set[Type[Event]]:
     """Retrieve a set of subclasses of Event.
 
     Parameters
     ----------
-    names : List[Union[str, Type[Event]]]
-        A list of names or classes of Events to retrieve.
+    names : Tuple[str, ...]
+        A list of names of Events to retrieve.
 
     Returns
     -------

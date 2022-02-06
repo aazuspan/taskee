@@ -1,169 +1,176 @@
-# taskee
+<img src="assets/logo.png" alt="taskee logo" style="width:180px;"/>
 
-![](assets/preview_windows.jpg)
+`taskee` is a command-line tool for monitoring [Google Earth Engine](https://developers.google.com/earth-engine) tasks that can send notifications to your phone or computer to let you know when your tasks finish.
 
-## Description
+![](assets/dashboard.gif)
 
-`taskee` is a tool for monitoring `Google Earth Engine` tasks. It runs in the background and can send notifications to your phone or computer to let you know when your tasks finish (or fail 🤫).
-
-## Features
+# Features
 
 - 🔍 Monitor [Google Earth Engine](https://developers.google.com/earth-engine) tasks created with the Python API and/or the Javascript Code Editor
 - 💻 Native notifications for Linux, Mac, and Windows
-- 📱 Mobile push notifications for Android
-- 🐍 Run in an interactive python shell or through a CLI
+- :speech_balloon: Mobile push notifications for Android
+- :tv: Built-in CLI dashboard
 
-## Setup
+# Setup
 
-### 1. Install from PyPI
-First, install the `taskee` package from PyPI.
-
-```posh
+```bash
 pip install taskee
 ```
 
-### 2. Set up Earth Engine
-Next, set up a [Google Earth Engine](https://developers.google.com/earth-engine) account. If you haven't authenticated Earth Engine before, you'll be asked to do so the first time you run `taskee.initialize()`.
-
-### 3. Set up Pushbullet (Optional)
-If you want to receive mobile notifications (Android only), you'll need to create or connect an account with [Pushbullet](https://pushbullet.com), download the app on your device(s), and install the [Pushbullet Python API](https://github.com/rbrcsk/pushbullet.py). 
-
-```posh
-pip install pushbullet.py
-```
-
-Once you're logged in, go to your [Account Settings](https://www.pushbullet.com/#settings), create an Access Token, and copy the API key. The first time you run `taskee.initialize()` with a `pushbullet` notifier, you'll need to enter your API key. That key will be stored locally so you don't have to enter it again.
-
-### 4. Set up notify-send (Linux only)
-Linux users may need to install `notify-send` to enable `native` notifications. Run the following terminal command to check if `notify-send` is working.
-
-```posh
-notify-send 'This is a test'
-```
-
-If the command above didn't work, run the command below.
-
-```posh
-sudo apt install libnotify-bin
-```
-
-## Usage
+Run the setup steps below as needed.  
+</br>
 
 <details>
-  <summary><b>Interactive</b></summary></br>
+  <summary><b>Earth Engine</b> (required)</summary>
+  Set up a <a href="https://developers.google.com/earth-engine">Google Earth Engine</a> account. If you haven't authenticated Earth Engine before, you'll be asked to do so the first time you run <code>taskee</code>.
+  
+</details></br>
 
-One way to run `taskee` is to set up an interactive Python shell or Jupyter kernel. 
+<details>
+  <summary><b>Pushbullet</b> (optional)</summary>
+  If you want to receive mobile notifications (Android only), you'll need to create or connect an account with <a href="https://pushbullet.com">Pushbullet</a>, download the app on your device(s), and install the <a href="https://github.com/rbrcsk/pushbullet.py">Pushbullet Python API</a> using <code>pip install pushbullet.py</code>.
+  Once Pushbullet is installed and you're logged in, go to your <a href="https://www.pushbullet.com/#settings">Account Settings</a>, create an Access Token, and copy the API key. The first time you run <code>taskee</code> with a <code>pushbullet</code> notifier, you'll need to enter your API key. That key will be stored locally so you don't have to enter it again.
+</details></br>
 
-Just import `taskee`, initialize the `Watcher` object, and start watching for tasks.
-```python
-import taskee
+<details>
+  <summary><b>notify-send</b> (Linux only)</summary>
+  Linux users may need to install <code>notify-send</code> to enable <code>native</code> notifications. If <code>taskee</code> is not working with the <code>native</code> notifier, run <code>sudo apt install libnotify-bin</code>.
+</details>
+</br>
 
-watcher = taskee.initialize()
-watcher.watch()
+
+# Usage
+
+`taskee` offers a few different commands which you can see by running `taskee --help`.
+
+```bash
+Usage: python -m taskee.cli.cli [OPTIONS] COMMAND [ARGS]...
+
+  Monitor Earth Engine tasks and send notifications.
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  start  Start running the notification system.
+  tasks  Display a table of current Earth Engine tasks.
+  test   Send a test notification.
+
 ```
 
-### Selecting a Notifier
+## Starting taskee
 
-By default, `taskee` will use the `native` notification system built into your computer's operating system. If you want notifications on other devices, [set up Pushbullet](#3-set-up-pushbullet-optional) and use it by passing `pushbullet` to the `notifiers` argument.
+The `taskee start` command initializes and runs the notification system. It will continue running until you cancel it, periodically checking your Earth Engine tasks and sending you notifications.
 
-```python
-watcher = taskee.initialize(notifiers="pushbullet")
+`taskee start` requires one argument: `mode`.
+
+### Choosing a Mode
+
+There are two modes that `taskee start` can run in: `dashboard` and `log`.
+
+`dashboard` shows a live-updating dashboard that makes it easy to visually keep track of your tasks and events.
+
+```bash
+taskee start dashboard
 ```
 
-You can use both notifiers by passing a list with both notifiers...
+![A dashboard showing live-updating tasks and events](assets/dashboard.gif)
 
-```python
-watcher = taskee.initialize(notifiers=["native", "pushbullet"])
+`log` is designed to be run in the background and prints minimal logs as events occur.
+
+```bash
+taskee start log
 ```
 
-Or use the shorcut keyword `all`.
-
-```python
-watcher = taskee.initialize(notifiers="all")
-```
+![A terminal showing logs of new events.](assets/log.gif)
 
 ### Filtering Events
 
-There are a lot of [possible events](#events) that can happen to Earth Engine tasks. By default, `taskee` will notify you when a task completes or fails or if `taskee` crashes, but you can specify which events to watch for using the `watch_for` argument.
+There are a lot of possible events that can happen to Earth Engine tasks. The list below describes the events recognized by `taskee`.
 
-```python
-watcher.watch(watch_for=["attempted", "failed", "cancelled", "error"])
+| Event | Description |
+| ----: | :----- |
+| *created* | :seedling: A new task is submitted. |
+| *started* | :herb: A task starts processing. |
+| *attempted* | :fallen_leaf: An attempt fails and the task is restarted. |
+| *completed* | :evergreen_tree: A task finished successfully. |
+| *failed* | :fire: A task fails to complete. |
+| *cancelled* | :axe: The user cancels the task. |
+| *error* | :exclamation: `taskee` crashes. |
+
+By default, `taskee` will notify you of `errors` and `completed` or `failed` tasks, but you can specify which events to watch for by listing them when you launch `taskee`. For example:
+
+```bash
+taskee start dashboard failed attempted cancelled error
 ```
 
-Once again, `all` is a convenient keyword if you want to use all available events.
+You can also use `all` as a shortcut and `taskee` will notify you of all events.
 
-```python
-watcher.watch(watch_for="all")
+```bash
+taskee start dashboard all
+```
+
+### Selecting Notifiers
+
+By default, `taskee` will use the `native` notification system built into your computer's operating system. 
+
+![](assets/notification_native_windows.gif)
+
+
+If you want notifications on other devices, set up Pushbullet and then select it with the `-n --notifier` option.
+
+```bash
+taskee start dashboard --notifier pushbullet
+```
+
+![](assets/notification_pushbullet.gif)
+
+Like with events, you can use `all` as a shortcut and `taskee` will send both `native` and `pushbullet` notifications.
+
+```bash
+taskee start dashboard -n all
 ```
 
 ### Other Options
 
-You can set how often tasks are re-checked using the `interval_minutes` keyword...
+You can set how often tasks are re-checked (in minutes) using the `-i --interval_mins` option. 
 
-```python
-watcher.watch(interval_minutes=5)
+```bash
+taskee start dashboard -i 10
 ```
 
-And modify how much information is logged to the console using the `logging_level` argument and [this list of levels](https://docs.python.org/3/library/logging.html#levels).
+Note: `taskee` doesn't set a minimum interval, but if updates occur too frequently you may run into rate limits for Earth Engine or Pushbullet.
 
-```python
-watcher = taskee.initalize(logging_level="DEBUG")
+### Example
+
+Using what we learned above, let's set up `taskee` to start running in `log` mode, check for `cancelled` or `completed` task events, send us notifications using `pushbullet`, and update every `30` minutes.
+
+```bash
+taskee start log cancelled completed -n pushbullet -i 30
 ```
 
-</details>
-  
-  
-<details>
-  <summary><b>Command Line</b></summary></br>
-  
-You can also run `taskee` with the command line interface. By default, the command below will watch for `completed`, `failed`, and `error` events every 15 minutes and notify you with `native` notifications.
+## Other Commands
 
-```posh
-python -m taskee.cli
+Aside from running the notification system, `taskee` has a few more commands that may be helpful.
+
+
+### Task Summaries
+
+The `tasks` command checks your Earth Engine tasks once, giving you a snapshot of your current tasks in a nice, readable table.
+
+```bash
+taskee tasks
 ```
 
-You can watch for additional events by providing a list of events (case-insensitive).
+![A table showing details for a list of tasks.](assets/tasks.png)
 
-```posh
-python -m taskee.cli completed failed attempted
+### Test Notifications
+
+The `test` command sends a mock notification to any notifiers selected with the `-n --notifier` option. You can use this to make sure notifications are set up and working.
+
+```bash
+taskee test -n native
 ```
 
-Or use `all` to monitor any event type.
-```posh
-python -m taskee.cli all
-```
-
-You add notifiers using the `--notifier` or `-n` option. Like with events, you can use `all` as a shortcut.
-```posh
-python -m taskee.cli -n native -n pushbullet
-```
-
-And you can adjust the update interval using the `--interval_mins` or `-i` option.
-```posh
-python -m taskee.cli -i 10
-```
-
-Putting it all together, the command below will watch for `failed` and `attempted` events using the `pushbullet` notifier every `5` minutes.
-```posh
-python -m taskee.cli failed attempted -n pushbullet -i 5
-```
-
-For help:
-```posh
-python -m taskee.cli --help
-```
-</details>
-
-## Events
-
-When an Earth Engine task is updated, it creates an event. You can choose which type of events you're interested from the list below.
-
-| Event | Description |
-| ----: | :----- |
-| Created | A new task is submitted. |
-| Started | A task starts processing. |
-| Attempted | An attempt fails and the task is restarted. |
-| Completed | A task finished successfully. |
-| Failed | A task fails to complete. |
-| Cancelled | The user cancels the task. |
-| Error | `taskee` crashes. |
+![](assets/test.gif)
