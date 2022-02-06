@@ -97,7 +97,9 @@ def tasks_command() -> None:
     "--notifier",
     default=("native",),
     multiple=True,
-    type=click.Choice(notifier.list_notifiers().keys(), case_sensitive=False),
+    type=click.Choice(
+        list(notifier.list_notifiers().keys()) + ["all"], case_sensitive=False
+    ),
     help="One or more notifiers to test.",
 )
 def test_command(notifiers: Tuple[str, ...]) -> None:
