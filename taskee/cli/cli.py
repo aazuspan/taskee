@@ -7,9 +7,6 @@ from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
-# import click
-
-
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.USE_MARKDOWN = True
 
@@ -21,8 +18,9 @@ modes = {"log": log.start, "dashboard": dashboard.start}
 @click.version_option(version, prog_name="taskee")
 def taskee() -> None:
     """
-    Monitor Earth Engine tasks and send notifications when they change states.
-
+    Monitor Earth Engine tasks and send notifications when they change states.  
+    \
+    
     **Examples**
 
     ```bash
@@ -71,7 +69,8 @@ def start_command(
     """
     Start running the notification system. Select a mode
     and one or more event types to watch for (or all).
-
+    \
+    
     **Examples**
 
     ```bash
@@ -117,7 +116,8 @@ def tasks_command() -> None:
 def test_command(notifiers: Tuple[str, ...]) -> None:
     """
     Send test notifications to selected notifiers (default native).
-
+    \
+    
     **Examples**
 
     ```bash
