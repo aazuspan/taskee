@@ -2,7 +2,7 @@ import configparser
 from typing import TYPE_CHECKING, Union
 
 from requests.exceptions import ConnectionError
-from rich.prompt import Prompt  # type: ignore
+from rich.prompt import Prompt
 
 from taskee.notifiers.notifier import Notifier
 from taskee.utils import config_path

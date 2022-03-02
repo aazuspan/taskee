@@ -1,11 +1,17 @@
 from typing import Tuple
 
-import click  # type: ignore
+import rich_click as click  # type: ignore
 
 from taskee import events
 from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.notifiers import notifier
 from taskee.taskee import Taskee
+
+# import click
+
+
+click.rich_click.SHOW_ARGUMENTS = True
+click.rich_click.USE_MARKDOWN = True
 
 version = "0.0.3"
 modes = {"log": log.start, "dashboard": dashboard.start}
@@ -14,19 +20,22 @@ modes = {"log": log.start, "dashboard": dashboard.start}
 @click.group()
 @click.version_option(version, prog_name="taskee")
 def taskee() -> None:
-    """Monitor Earth Engine tasks and send notifications when they change states.
+    """
+    Monitor Earth Engine tasks and send notifications when they change states.
 
-    \b
-    Examples
-        $ taskee test
-        $ taskee tasks
-        $ taskee start log
-        $ taskee start dashboard failed completed -n pushbullet -i 0.5
+    **Examples**
+
+    ```bash
+    $ taskee test
+    $ taskee tasks
+    $ taskee start log
+    $ taskee start dashboard failed completed -n pushbullet -i 0.5
+    ```
     """
     return
 
 
-@taskee.command(name="start")
+@taskee.command(name="start", short_help="Start running the notification system.")
 @click.argument("mode", nargs=1, type=click.Choice(choices=modes.keys()))
 @click.argument(
     "watch_for",
@@ -59,13 +68,16 @@ def start_command(
     notifiers: Tuple[str, ...],
     interval_mins: float,
 ) -> None:
-    """Start running the notification system. Select a mode (default native)
+    """
+    Start running the notification system. Select a mode
     and one or more event types to watch for (or all).
 
-    \b
-    Examples
-        $ taskee start dashboard failed completed -n pushbullet -i 5
-        $ taskee start log all
+    **Examples**
+
+    ```bash
+    $ taskee start dashboard failed completed -n pushbullet -i 5
+    $ taskee start log all
+    ```
     """
     if len(watch_for) == 0:
         watch_for = ("completed", "failed", "error")
@@ -106,9 +118,11 @@ def test_command(notifiers: Tuple[str, ...]) -> None:
     """
     Send test notifications to selected notifiers (default native).
 
-    \b
-    Examples
-        $ taskee test -n all
+    **Examples**
+
+    ```bash
+    $ taskee test -n all
+    ```
     """
     test.test(notifiers)
 
