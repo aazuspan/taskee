@@ -9,7 +9,7 @@ requirements = [
     "notify-py",
     "requests",
     "click",
-    "rich-click>1.0.2",
+    "rich-click>=1.2.1",
 ]
 test_requirements = ["pytest"]
 dev_requirements = [
