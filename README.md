@@ -148,7 +148,8 @@ You can set how often tasks are re-checked (in minutes) using the `-i --interval
 taskee start dashboard -i 10
 ```
 
-Note: `taskee` doesn't set a minimum interval, but if updates occur too frequently you may run into rate limits for Earth Engine or Pushbullet.
+> **Warning**  
+> `taskee` doesn't set a minimum interval, but if updates occur too frequently you may run into rate limits for Earth Engine or Pushbullet.
 
 ### Example
 
