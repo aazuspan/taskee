@@ -2,7 +2,7 @@ from typing import Set, Tuple, Type
 
 import ee  # type: ignore
 
-from taskee import events, utils
+from taskee import events, states, utils
 from taskee.dispatcher import Dispatcher
 from taskee.tasks import TaskManager
 
@@ -29,9 +29,19 @@ class Taskee:
         self.manager.update(ee.data.getTaskList())
 
         new_events = self.manager.events
+        active_tasks = self.manager.active_tasks
 
         for event in new_events:
-            if isinstance(event, tuple(watch_for)):
-                self.dispatcher.notify(event.title, event.message)
+            if not isinstance(event, tuple(watch_for)):
+                continue
+
+            message = event.message
+            if (
+                isinstance(event, events.TaskEvent)
+                and event.task.state in states.FINISHED
+            ):
+                message += f" ({len(active_tasks)} tasks remaining)"
+
+            self.dispatcher.notify(event.title, message)
 
         return new_events

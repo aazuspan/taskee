@@ -96,6 +96,11 @@ class TaskManager:
     def tasks(self) -> Tuple[Task, ...]:
         return tuple(self._tasks.values())
 
+    @property
+    def active_tasks(self) -> Tuple[Task, ...]:
+        """Retrieve all active tasks."""
+        return tuple(task for task in self.tasks if task.state in states.ACTIVE)
+
     def update(self, task_list: List[Dict]) -> None:
         """Update all tasks. Existing tasks will be updated and new tasks will be added to the manager."""
         current_tasks = self._tasks.keys()
