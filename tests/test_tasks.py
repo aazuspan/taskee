@@ -2,7 +2,7 @@ import datetime
 
 from taskee import events, states, tasks
 from taskee.utils import _datetime_to_millis
-from tests.mock_tasks import MockTask
+from .mock_tasks import MockTask
 
 
 def test_task_failed_event():
@@ -58,7 +58,7 @@ def test_time_elapsed():
 
 def test_time_updated():
     """Test that a task's time_updated is correctly retrieved"""
-    dt = datetime.datetime(year=1970, month=1, day=1)
+    dt = datetime.datetime(year=1999, month=1, day=1)
     ms = _datetime_to_millis(dt)
     task = MockTask("READY", update_timestamp_ms=ms)
     assert task.time_updated == dt
