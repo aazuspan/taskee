@@ -1,6 +1,7 @@
-from typing import Tuple
+from __future__ import annotations
 
 import rich_click as click  # type: ignore
+from rich.status import Status
 
 from taskee import events
 from taskee.cli.commands import dashboard, log, tasks, test
@@ -10,12 +11,11 @@ from taskee.taskee import Taskee
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.USE_MARKDOWN = True
 
-version = "0.0.4"
 modes = {"log": log.start, "dashboard": dashboard.start}
 
 
 @click.group()
-@click.version_option(version, prog_name="taskee")
+@click.version_option()
 def taskee() -> None:
     """
     Monitor Earth Engine tasks and send notifications when they change states.  
@@ -62,8 +62,8 @@ def taskee() -> None:
 )
 def start_command(
     mode: str,
-    watch_for: Tuple[str, ...],
-    notifiers: Tuple[str, ...],
+    watch_for: tuple[str, ...],
+    notifiers: tuple[str, ...],
     interval_mins: float,
 ) -> None:
     """
@@ -98,9 +98,9 @@ def start_command(
 @taskee.command(name="tasks")
 def tasks_command() -> None:
     """Display a table of current Earth Engine tasks."""
-    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):    
-        t = Taskee(notifiers=[])
-        tasks.tasks(t)  
+    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
+        t = Taskee(notifiers=tuple())
+        tasks.tasks(t)
 
 
 @taskee.command(name="test", short_help="Send test notifications.")
@@ -115,7 +115,7 @@ def tasks_command() -> None:
     ),
     help="One or more notifiers to test.",
 )
-def test_command(notifiers: Tuple[str, ...]) -> None:
+def test_command(notifiers: tuple[str, ...]) -> None:
     """
     Send test notifications to selected notifiers (default native).
     \

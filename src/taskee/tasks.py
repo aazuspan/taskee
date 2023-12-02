@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import datetime
-from typing import Dict, List, Tuple, Union
 
 from taskee import events, states
 from taskee.utils import _millis_to_datetime
@@ -8,12 +9,12 @@ from taskee.utils import _millis_to_datetime
 class Task:
     """Wrapper class around a persistent Earth Engine task."""
 
-    def __init__(self, obj: Dict):
+    def __init__(self, obj: dict):
         self._status = obj
         self.id = obj["id"]
         self.description = obj["description"]
         self.time_created = _millis_to_datetime(obj["creation_timestamp_ms"])
-        self.event: Union[events.Event, None] = events.Created(self)
+        self.event: events.Event | None = events.Created(self)
 
     def __str__(self) -> str:
         return f"<{self.id}>: {self.description} [{self.state}]"
@@ -38,14 +39,14 @@ class Task:
         """Return the time elapsed between the task creation and the last update."""
         return self.time_updated - self.time_created
 
-    def update(self, new_status: Dict) -> None:
+    def update(self, new_status: dict) -> None:
         """Update the status of the task and record any changed attributes as events."""
         self.event = self._parse_event(new_status)
         self._status = new_status
 
-    def _parse_event(self, new_status: Dict) -> Union[None, events.Event]:
+    def _parse_event(self, new_status: dict) -> events.Event | None:
         """Take the updated status dictionary and identify if an Event occured."""
-        event: Union[None, events.Event] = None
+        event: events.Event | None = None
 
         old_state = self._status["state"]
         new_state = new_status["state"]
@@ -75,17 +76,18 @@ class Task:
 class TaskManager:
     """Manager class for handling all Earth Engine tasks."""
 
-    def __init__(self, tasks: List[Dict]):
-        self._tasks: Dict = {}
+    def __init__(self, tasks: list[dict]):
+        self._tasks: dict = {}
         self.update(tasks)
 
         # The initial set of tasks should not register Created events.
-        # There's a better way to handle this, but for now I'm just manually suppressing those events.
+        # There's a better way to handle this, but for now I'm just manually suppressing
+        # those events.
         for task in self._tasks.values():
             task.event = None
 
     @property
-    def events(self) -> Tuple[events.Event, ...]:
+    def events(self) -> tuple[events.Event, ...]:
         """Retrieve active events from all tasks, sorted by time."""
         task_events = [task.event for task in self.tasks if task.event is not None]
         if len(task_events) > 1:
@@ -93,16 +95,17 @@ class TaskManager:
         return tuple(task_events)
 
     @property
-    def tasks(self) -> Tuple[Task, ...]:
+    def tasks(self) -> tuple[Task, ...]:
         return tuple(self._tasks.values())
 
     @property
-    def active_tasks(self) -> Tuple[Task, ...]:
+    def active_tasks(self) -> tuple[Task, ...]:
         """Retrieve all active tasks."""
         return tuple(task for task in self.tasks if task.state in states.ACTIVE)
 
-    def update(self, task_list: List[Dict]) -> None:
-        """Update all tasks. Existing tasks will be updated and new tasks will be added to the manager."""
+    def update(self, task_list: list[dict]) -> None:
+        """Update all tasks. Existing tasks will be updated and new tasks will be added
+        to the manager."""
         current_tasks = self._tasks.keys()
 
         for task in task_list:
@@ -120,7 +123,8 @@ class TaskManager:
         self._sort_tasks()
 
     def _sort_tasks(self) -> None:
-        """Sort the tasks by placing active tasks first and then sorting by their creation date."""
+        """Sort the tasks by placing active tasks first and then sorting by their
+        creation date."""
         self._tasks = {
             k: v
             for k, v in sorted(

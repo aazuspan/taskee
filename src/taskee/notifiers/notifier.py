@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Mapping, Set, Tuple, Type
+from typing import Mapping
 
 from taskee.utils import _get_subclasses, _list_subclasses
 
@@ -10,9 +12,9 @@ class Notifier(ABC):
         pass
 
 
-def list_notifiers() -> Mapping[str, Type[Notifier]]:
-    """List all Notifier subclasses. Return as a dictionary mapping the subclass name to the
-    class.
+def list_notifiers() -> Mapping[str, type[Notifier]]:
+    """List all Notifier subclasses. Return as a dictionary mapping the subclass name
+    to the class.
 
     Returns
     -------
@@ -22,7 +24,7 @@ def list_notifiers() -> Mapping[str, Type[Notifier]]:
     return _list_subclasses(Notifier)
 
 
-def get_notifiers(names: Tuple[str, ...]) -> Set[Type[Notifier]]:
+def get_notifiers(names: tuple[str, ...]) -> set[type[Notifier]]:
     """Retrieve a set of subclasses of Notifier.
 
     Parameters

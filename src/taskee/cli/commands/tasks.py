@@ -1,17 +1,14 @@
-import datetime
-from typing import Tuple
+from __future__ import annotations
 
-import ee  # type: ignore
 import humanize  # type: ignore
 import rich
 from rich import box
-from rich.status import Status
 from rich.table import Table
 
 from taskee import states
 from taskee.cli.styles import get_style
-from taskee.tasks import Task
 from taskee.taskee import Taskee
+from taskee.tasks import Task
 
 
 def tasks(t: Taskee) -> None:
@@ -19,7 +16,7 @@ def tasks(t: Taskee) -> None:
     rich.print(create_task_table(tuple(tasks)))
 
 
-def create_task_table(tasks: Tuple[Task, ...]) -> Table:
+def create_task_table(tasks: tuple[Task, ...]) -> Table:
     """Create a table of tasks."""
     t = Table(
         title="[bold bright_green]Tasks",

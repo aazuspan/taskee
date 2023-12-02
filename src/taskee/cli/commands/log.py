@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import time
-from typing import Tuple
 
 from rich.logging import RichHandler
 from rich.status import Status
@@ -21,7 +22,7 @@ logger = logging.getLogger("taskee")
 
 def start(
     t: Taskee,
-    watch_for: Tuple[str, ...] = ("error", "completed", "failed"),
+    watch_for: tuple[str, ...] = ("error", "completed", "failed"),
     interval_minutes: float = 5.0,
 ) -> None:
     """Run an indefinite logger. This handles scheduling of Earth Engine updates and
@@ -39,7 +40,7 @@ def start(
         active_tasks = t.manager.active_tasks
 
         if elapsed > interval_seconds:
-            with Status(f"[yellow]Updating tasks...", spinner="bouncingBar"):
+            with Status("[yellow]Updating tasks...", spinner="bouncingBar"):
                 new_events = t._update(watch_events)
                 last_checked = time.time()
                 remaining_tasks = t.manager.active_tasks
@@ -65,9 +66,10 @@ def start(
         else:
             delta = datetime.timedelta(seconds=interval_seconds - elapsed)
             next_update = datetime.datetime.now() + delta
+            next_update_msg = (
+                f"[yellow]Next update at {next_update:%H:%M:%S}... "
+                f"({len(active_tasks)} active tasks)"
+            )
 
-            with Status(
-                f"[yellow]Next update at {next_update:%H:%M:%S}... ({len(active_tasks)} active tasks)",
-                spinner="bouncingBar",
-            ):
+            with Status(next_update_msg, spinner="bouncingBar"):
                 time.sleep(delta.total_seconds())

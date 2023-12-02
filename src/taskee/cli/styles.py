@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Any, Mapping, Type, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Mapping
 
 from taskee import events, states
 
@@ -34,9 +36,9 @@ styles: Mapping[Any, Style] = {
 }
 
 
-def get_style(obj: Union[str, Type["Event"]]) -> Style:
-    """Retrieve the Style for a given object or class, such as an Event class or a state string."""
+def get_style(obj: str | type[Event]) -> Style:
+    """Retrieve the Style for a given object or class."""
     try:
         return styles[obj]
     except KeyError:
-        raise KeyError(f"'{obj}' does not have a registered style.")
+        raise KeyError(f"'{obj}' does not have a registered style.") from None

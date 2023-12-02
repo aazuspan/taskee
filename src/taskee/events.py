@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Mapping, Set, Tuple, Type
+from typing import TYPE_CHECKING, Mapping
 
 import humanize  # type: ignore
 
@@ -25,7 +27,7 @@ class Event(ABC):
 class TaskEvent(Event, ABC):
     """A Task Event is a type of event originating from an Earth Engine task."""
 
-    def __init__(self, task: "Task"):
+    def __init__(self, task: Task):
         self.task = task
         super().__init__()
 
@@ -46,7 +48,10 @@ class Failed(TaskEvent):
     def message(self) -> str:
         error = self.task.error_message
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
-        return f"Task '{self.task.description}' failed with error '{error}' after {elapsed}."
+        return (
+            f"Task '{self.task.description}' failed with error '{error}' "
+            f"after {elapsed}."
+        )
 
 
 class Completed(TaskEvent):
@@ -57,7 +62,10 @@ class Completed(TaskEvent):
     @property
     def message(self) -> str:
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
-        return f"Task '{self.task.description}' completed successfully! It ran for {elapsed}."
+        return (
+            f"Task '{self.task.description}' completed successfully! "
+            f"It ran for {elapsed}."
+        )
 
 
 class Created(TaskEvent):
@@ -101,9 +109,9 @@ class Started(TaskEvent):
         return f"Task '{self.task.description}' has started processing."
 
 
-def list_events() -> Mapping[str, Type["Event"]]:
-    """List all Event subclasses. Return as a dictionary mapping the subclass name to the
-    class.
+def list_events() -> Mapping[str, type[Event]]:
+    """List all Event subclasses. Return as a dictionary mapping the subclass name to
+    the class.
 
     Returns
     -------
@@ -113,7 +121,7 @@ def list_events() -> Mapping[str, Type["Event"]]:
     return utils._list_subclasses(Event)
 
 
-def get_events(names: Tuple[str, ...]) -> Set[Type[Event]]:
+def get_events(names: tuple[str, ...]) -> set[type[Event]]:
     """Retrieve a set of subclasses of Event.
 
     Parameters
