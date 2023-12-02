@@ -37,7 +37,7 @@ class Dashboard:
         self.last_checked = time.time()
 
         self.t = t
-        self.watch_events = events.get_events(watch_for)
+        self.watch_events = set([events.get_event(name) for name in watch_for])
         self.interval_seconds = interval_minutes * 60.0
 
         self.layout = self.create_layout()

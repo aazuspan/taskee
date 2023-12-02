@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import datetime
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING
 
 import humanize  # type: ignore
-
-from taskee import utils
 
 if TYPE_CHECKING:
     from taskee.tasks import Task
@@ -109,29 +107,17 @@ class Started(TaskEvent):
         return f"Task '{self.task.description}' has started processing."
 
 
-def list_events() -> Mapping[str, type[Event]]:
-    """List all Event subclasses. Return as a dictionary mapping the subclass name to
-    the class.
+EVENT_TYPES = {
+    "error": Error,
+    "failed": Failed,
+    "completed": Completed,
+    "created": Created,
+    "attempted": Attempted,
+    "cancelled": Cancelled,
+    "started": Started,
+}
 
-    Returns
-    -------
-    Dict[str, Type[Event]]
-        A dictionary mapping the Event name to the class.
-    """
-    return utils._list_subclasses(Event)
 
-
-def get_events(names: tuple[str, ...]) -> set[type[Event]]:
-    """Retrieve a set of subclasses of Event.
-
-    Parameters
-    ----------
-    names : Tuple[str, ...]
-        A list of names of Events to retrieve.
-
-    Returns
-    -------
-    Set[Type[Any]]
-        A set of Events.
-    """
-    return utils._get_subclasses(names, Event)
+def get_event(name: str) -> type[Event]:
+    """Get an event by name."""
+    return EVENT_TYPES[name.lower()]  # type: ignore

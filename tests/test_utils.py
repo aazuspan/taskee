@@ -4,8 +4,6 @@ import pytest
 
 from taskee.utils import (
     _datetime_to_millis,
-    _get_subclasses,
-    _list_subclasses,
     _millis_to_datetime,
 )
 
@@ -20,30 +18,6 @@ class MockSubclassOne(MockClass):
 
 class MockSubclassTwo(MockClass):
     pass
-
-
-def test_list_subclasses():
-    subclasses = _list_subclasses(MockClass)
-    assert "MockSubclassOne" in subclasses.keys()
-    assert MockSubclassOne in subclasses.values()
-
-
-def test_get_subclasses_from_strings():
-    """Test that we can get subclasses using their string names, case-insensitive."""
-    subclasses = _get_subclasses(["MockSubclassOne", "mocksubclasstwo"], MockClass)
-    assert subclasses == {MockSubclassOne, MockSubclassTwo}
-
-
-def test_get_all_subclasses():
-    """Test that we can get all subclasses using keyword 'all'."""
-    subclasses = _get_subclasses(["all"], MockClass)
-    assert subclasses == {MockSubclassOne, MockSubclassTwo}
-
-
-def test_get_subclasses_gives_close_match():
-    """Test that _get_subclasses raises an AttributeError and gives a correct close match when an invalid input is given."""
-    with pytest.raises(AttributeError, match="MockSubclassOne"):
-        _get_subclasses(["mocksubclasson"], MockClass)
 
 
 def test_datetime_to_millis():

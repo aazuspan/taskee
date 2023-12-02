@@ -3,9 +3,8 @@ from __future__ import annotations
 import rich_click as click  # type: ignore
 from rich.status import Status
 
-from taskee import events
+from taskee import events, notifiers
 from taskee.cli.commands import dashboard, log, tasks, test
-from taskee.notifiers import notifier
 from taskee.taskee import Taskee
 
 click.rich_click.SHOW_ARGUMENTS = True
@@ -39,7 +38,7 @@ def taskee() -> None:
     "watch_for",
     nargs=-1,
     type=click.Choice(
-        choices=list(events.list_events().keys()) + ["all"], case_sensitive=False
+        choices=list(events.EVENT_TYPES.keys()) + ["all"], case_sensitive=False
     ),
 )
 @click.option(
@@ -48,9 +47,7 @@ def taskee() -> None:
     "--notifier",
     default=("native",),
     multiple=True,
-    type=click.Choice(
-        list(notifier.list_notifiers().keys()) + ["all"], case_sensitive=False
-    ),
+    type=click.Choice(notifiers.NOTIFIER_TYPES, case_sensitive=False),
     help="One or more notifiers to run.",
 )
 @click.option(
@@ -110,9 +107,7 @@ def tasks_command() -> None:
     "--notifier",
     default=("native",),
     multiple=True,
-    type=click.Choice(
-        list(notifier.list_notifiers().keys()) + ["all"], case_sensitive=False
-    ),
+    type=click.Choice(notifiers.NOTIFIER_TYPES, case_sensitive=False),
     help="One or more notifiers to test.",
 )
 def test_command(notifiers: tuple[str, ...]) -> None:

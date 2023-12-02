@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from taskee.notifiers.notifier import get_notifiers
+from taskee.notifiers import get_notifier
 
 
 class Dispatcher:
     def __init__(self, notifiers: tuple[str, ...]):
-        selected_notifiers = get_notifiers(notifiers)
-        self.notifiers = [notifier() for notifier in selected_notifiers]
+        self.notifiers = [get_notifier(name)() for name in notifiers]
 
     def notify(self, title: str, message: str) -> None:
         """Send notifications to all registered notifiers."""

@@ -33,7 +33,7 @@ def start(
     last_checked = time.time()
     interval_seconds = interval_minutes * 60.0
 
-    watch_events = events.get_events(watch_for)
+    watch_events = set([events.get_event(name) for name in watch_for])
 
     while True:
         elapsed = time.time() - last_checked
