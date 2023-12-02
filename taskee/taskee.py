@@ -1,26 +1,32 @@
-from typing import Set, Tuple, Type
+from typing import Set, Tuple, Type, Union
 
 import ee  # type: ignore
+from google.oauth2.credentials import Credentials as OAuthCredentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 
 from taskee import events, states, utils
 from taskee.dispatcher import Dispatcher
 from taskee.tasks import TaskManager
 
+Credentials = Union[OAuthCredentials, ServiceAccountCredentials, str]
 
 class Taskee:
     """The Taskee object is the primary interface to the taskee library. It connects the task manager, which
     tracks tasks and events, to the dispatcher, which distributes notifications. The Taskee object is the
     only direct point of contact with Earth Engine."""
 
-    def __init__(self, notifiers: Tuple[str, ...] = ("native",)):
+    def __init__(self, notifiers: Tuple[str, ...] = ("native",), credentials: Credentials="persistent"):
 
         """
         Parameters
         ----------
         notifiers : Tuple[str, ...]
             Notifier names for handling notifications.
+        credentials : Credentials
+            Credentials for initializing Earth Engine, e.g. from ee.ServiceAccountCredentials. If not provided,
+            the default persistent credentials will be used.
         """
-        utils.initialize_earthengine()
+        ee.Initialize(credentials=credentials)
         self.manager = TaskManager(ee.data.getTaskList())
         self.dispatcher = Dispatcher(notifiers)
 
