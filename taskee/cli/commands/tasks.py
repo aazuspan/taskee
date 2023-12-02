@@ -11,16 +11,12 @@ from rich.table import Table
 from taskee import states
 from taskee.cli.styles import get_style
 from taskee.tasks import Task
-from taskee.utils import initialize_earthengine
+from taskee.taskee import Taskee
 
 
-def tasks() -> None:
-    initialize_earthengine()
-
-    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):    
-        tasks = [Task(task) for task in ee.data.getTaskList()]
-
-        rich.print(create_task_table(tuple(tasks)))
+def tasks(t: Taskee) -> None:
+    tasks = t.manager.tasks
+    rich.print(create_task_table(tuple(tasks)))
 
 
 def create_task_table(tasks: Tuple[Task, ...]) -> Table:

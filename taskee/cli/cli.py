@@ -98,7 +98,9 @@ def start_command(
 @taskee.command(name="tasks")
 def tasks_command() -> None:
     """Display a table of current Earth Engine tasks."""
-    tasks.tasks()
+    with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):    
+        t = Taskee(notifiers=[])
+        tasks.tasks(t)  
 
 
 @taskee.command(name="test", short_help="Send test notifications.")

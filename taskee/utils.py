@@ -10,15 +10,6 @@ from requests.structures import CaseInsensitiveDict
 config_path = os.path.expanduser("~/.config/taskee.ini")
 
 
-def initialize_earthengine() -> None:
-    """Initialize the Earth Engine API."""
-    try:
-        ee.Initialize()
-    except ee.EEException:
-        ee.Authenticate()
-        ee.Initialize()
-
-
 def _get_case_insensitive_close_matches(
     word: str, possibilities: List[str], n: int = 3, cutoff: float = 0.6
 ) -> List[str]:
