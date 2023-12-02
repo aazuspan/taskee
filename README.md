@@ -151,6 +151,14 @@ taskee start dashboard -i 10
 > **Warning**  
 > `taskee` doesn't set a minimum interval, but if updates occur too frequently you may run into rate limits for Earth Engine or Pushbullet.
 
+### Service Credentials
+
+By default, `taskee` uses the persistent credentials stored on your local machine (whichever account you authenticated last). To use a [service account](https://developers.google.com/earth-engine/guides/service_account) instead, pass the relative path to your private key file using the `-k --private-key` option.
+
+```bash
+taskee start dashboard -k path/to/private-key.json
+```
+
 ### Example
 
 Using what we learned above, let's set up `taskee` to start running in `log` mode, check for `cancelled` or `completed` task events, send us notifications using `pushbullet`, and update every `30` minutes.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ee
 import rich_click as click  # type: ignore
 from rich.status import Status
 
@@ -12,6 +13,39 @@ click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.USE_MARKDOWN = True
 
 modes = {"log": log.start, "dashboard": dashboard.start}
+
+PRIVATE_KEY_OPTION = click.option(
+    "private_key",
+    "-k",
+    "--private_key",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to private key file for Earth Engine authentication.",
+)
+
+NOTIFIERS_OPTION = click.option(
+    "notifiers",
+    "-n",
+    "--notifier",
+    default=("native",),
+    multiple=True,
+    type=click.Choice(list(NOTIFIER_TYPES.keys()) + ["all"], case_sensitive=False),
+    help="One or more notifiers to run (or all).",
+)
+
+INTERVAL_OPTION = click.option(
+    "interval_mins",
+    "-i",
+    "--interval_mins",
+    default=5.0,
+    help="Minutes between queries to Earth Engine for task updates.",
+)
+
+WATCH_FOR_ARG = click.argument(
+    "watch_for",
+    nargs=-1,
+    type=click.Choice(choices=list(EVENT_TYPES.keys()) + ["all"], case_sensitive=False),
+)
 
 
 @click.group()
@@ -35,32 +69,16 @@ def taskee() -> None:
 
 @taskee.command(name="start", short_help="Start running the notification system.")
 @click.argument("mode", nargs=1, type=click.Choice(choices=modes.keys()))
-@click.argument(
-    "watch_for",
-    nargs=-1,
-    type=click.Choice(choices=list(EVENT_TYPES.keys()) + ["all"], case_sensitive=False),
-)
-@click.option(
-    "notifiers",
-    "-n",
-    "--notifier",
-    default=("native",),
-    multiple=True,
-    type=click.Choice(list(NOTIFIER_TYPES.keys()) + ["all"], case_sensitive=False),
-    help="One or more notifiers to run (or all).",
-)
-@click.option(
-    "interval_mins",
-    "-i",
-    "--interval_mins",
-    default=5.0,
-    help="Minutes between queries to Earth Engine for task updates.",
-)
+@WATCH_FOR_ARG
+@NOTIFIERS_OPTION
+@INTERVAL_OPTION
+@PRIVATE_KEY_OPTION
 def start_command(
     mode: str,
     watch_for: tuple[str, ...],
     notifiers: tuple[str, ...],
     interval_mins: float,
+    private_key: str | None,
 ) -> None:
     """
     Start running the notification system. Select a mode
@@ -72,6 +90,7 @@ def start_command(
     ```bash
     $ taskee start dashboard failed completed -n pushbullet -i 5
     $ taskee start log all
+    $ taskee start log --private-key .private-key.json
     ```
     """
     if "all" in notifiers:
@@ -81,8 +100,13 @@ def start_command(
     elif len(watch_for) == 0:
         watch_for = ("completed", "failed", "error")
 
+    if private_key:
+        credentials = ee.ServiceAccountCredentials(email=None, key_file=private_key)
+    else:
+        credentials = "persistent"
+
     mode_func = modes[mode]
-    t = Taskee(notifiers=notifiers)
+    t = Taskee(notifiers=notifiers, credentials=credentials)
 
     try:
         mode_func(t, watch_for=watch_for, interval_minutes=interval_mins)
@@ -96,23 +120,21 @@ def start_command(
 
 
 @taskee.command(name="tasks")
-def tasks_command() -> None:
+@PRIVATE_KEY_OPTION
+def tasks_command(private_key: str | None) -> None:
     """Display a table of current Earth Engine tasks."""
+    if private_key:
+        credentials = ee.ServiceAccountCredentials(email=None, key_file=private_key)
+    else:
+        credentials = "persistent"
+
     with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
-        t = Taskee(notifiers=tuple())
+        t = Taskee(notifiers=tuple(), credentials=credentials)
         tasks.tasks(t)
 
 
 @taskee.command(name="test", short_help="Send test notifications.")
-@click.option(
-    "notifiers",
-    "-n",
-    "--notifier",
-    default=("native",),
-    multiple=True,
-    type=click.Choice(list(NOTIFIER_TYPES.keys()) + ["all"], case_sensitive=False),
-    help="One or more notifiers to test (or all).",
-)
+@NOTIFIERS_OPTION
 def test_command(notifiers: tuple[str, ...]) -> None:
     """
     Send test notifications to selected notifiers (default native).
