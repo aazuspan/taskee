@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import humanize  # type: ignore
 
 if TYPE_CHECKING:
-    from taskee.tasks import Task
+    from taskee.tasks import Task  # pragma: no cover
 
 
 class Event(ABC):
@@ -19,7 +19,7 @@ class Event(ABC):
     @property
     @abstractmethod
     def message(self) -> str:
-        return ""
+        raise NotImplementedError  # pragma: no cover
 
 
 class TaskEvent(Event, ABC):

@@ -1,11 +1,12 @@
-import datetime
+from __future__ import annotations
+
 import random
 import string
-from typing import Dict
+from datetime import datetime
 
-from taskee import events, states
+from taskee import states
 from taskee.tasks import Task
-from taskee.utils import _datetime_to_millis, _millis_to_datetime
+from taskee.utils import _datetime_to_millis
 
 
 class MockTask(Task):
@@ -21,8 +22,8 @@ class MockTask(Task):
         started_after_ms: int = 60_000,
         error_message: str = "error message",
     ):
-        """Initialize a mock task by passing in specific parameters. These will be used to
-        build a status dictionary matching those created by Earth Engine.
+        """Initialize a mock task by passing in specific parameters. These will be used
+        to build a status dictionary matching those created by Earth Engine.
 
         Parameters
         ----------
@@ -35,13 +36,14 @@ class MockTask(Task):
         task_type : str, default EXPORT_IMAGE
             The type of task, as defined by Earth Engine.
         update_timestamp_ms : int, optional
-            The timestamp in UTC milliseconds of the last task update. If none is provided,
-            the current time will be used.
+            The timestamp in UTC milliseconds of the last task update. If none is
+            provided, the current time will be used.
         time_since_creation_ms : int, default 600000
             The amount of time, in milliseconds, since the task was created. Defaults to
             10 minutes.
         started_after_ms : int, default 60000
-            The delay between the creation time and the starting time. Defaults to 1 minute.
+            The delay between the creation time and the starting time. Defaults to 1
+            minute.
         error_message : str, default "error message"
             The error message to assign to Failed and Cancelled tasks. The argument will
             be ignored for other task types.
@@ -54,82 +56,43 @@ class MockTask(Task):
         if state not in states.ALL:
             raise AttributeError(f"Invalid state: {state}. Choice from {states.ALL}.")
 
-        self.id = self.random_id() if id is None else id
-        self.description = description
-        self.event = events.Created(self)
-
-        update_timestamp_ms = (
-            _datetime_to_millis(datetime.datetime.now())
-            if update_timestamp_ms is None
-            else update_timestamp_ms
-        )
-        creation_timestamp_ms = (
-            _datetime_to_millis(datetime.datetime.now()) - time_since_creation_ms
-        )
+        now_ms = _datetime_to_millis(datetime.now())
+        update_timestamp_ms = update_timestamp_ms if update_timestamp_ms else now_ms
+        creation_timestamp_ms = now_ms - time_since_creation_ms
         start_timestamp_ms = creation_timestamp_ms + started_after_ms
 
-        self.time_created = _millis_to_datetime(creation_timestamp_ms)
-
-        self._status = self.build_status(
-            state,
-            task_type,
+        task_dict = _build_task_dict(
+            id=id if id else self.random_id(),
+            state=state,
+            description=description,
+            task_type=task_type,
             updated_time=update_timestamp_ms,
             created_time=creation_timestamp_ms,
             started_time=start_timestamp_ms,
             error_message=error_message,
         )
 
+        super().__init__(task_dict)
+
     @staticmethod
     def random_id(length=24):
-        """Create a random alphanumeric ID that is roughly consistent with an Earth Engine task ID."""
+        """Create a random alphanumeric ID that is roughly consistent with an Earth
+        Engine task ID."""
         chars = string.ascii_uppercase + string.digits
         return "".join([random.choice(chars) for i in range(length)])
 
-    def build_status(
+    def update(
         self,
-        state: str,
-        task_type: str,
-        updated_time: int,
-        created_time: int,
-        started_time: int,
-        error_message: str,
-    ) -> Dict:
-        """Build an Earth Engine-compatible status dictionary from initialized parameters."""
-        # These parameters are common to all task types
-        base_obj = {
-            "state": state,
-            "description": self.description,
-            "creation_timestamp_ms": created_time,
-            "update_timestamp_ms": updated_time,
-            "start_timestamp_ms": started_time,
-            "task_type": task_type,
-            "id": self.id,
-            "name": f"projects/earthengine-legacy/operations/{self.id}",
-        }
-
-        if state == states.COMPLETED:
-            base_obj["destination_uris"] = ["https://drive.google.com/"]
-        elif state in [states.FAILED, states.CANCELLED]:
-            base_obj["error_message"] = error_message
-        elif state == states.READY:
-            base_obj["start_timestamp_ms"] = 0
-
-        if state in [
-            states.COMPLETED,
-            states.FAILED,
-            states.CANCELLED,
-            states.RUNNING,
-            states.CANCEL_REQUESTED,
-        ]:
-            base_obj["attempt"] = 1
-
-        return base_obj
-
-    def get_next_status(
-        self, new_state: str = None, retry: bool = False, time_delta: int = 0
+        new_state: str = None,
+        *,
+        retry: bool = False,
+        time_delta: int = 0,
+        error_message: str = None,
     ):
-        """Build the next status dictionary based on requested changes to the task's attributes.
-        As much as possible, new attributes are validated to ensure they could occur in normal usage.
+        """Update the task with the new attributes.
+
+        As much as possible, new attributes are validated to ensure they could occur in
+        normal usage.
         """
         last_state = self._status["state"]
 
@@ -160,7 +123,54 @@ class MockTask(Task):
                 raise ValueError("Time deltas must be positive.")
             new_update_time = self._status["update_timestamp_ms"] + time_delta
             update_attrs["update_timestamp_ms"] = new_update_time
+        if error_message:
+            if new_state != states.FAILED:
+                raise ValueError("Only failed tasks can have an error message.")
+            update_attrs["error_message"] = error_message
 
         new_status.update(update_attrs)
 
-        return new_status
+        super().update(new_status)
+
+
+def _build_task_dict(
+    *,
+    id: str,
+    state: str,
+    description: str,
+    task_type: str,
+    updated_time: int,
+    created_time: int,
+    started_time: int,
+    error_message: str,
+) -> dict:
+    """Build an Earth Engine-compatible status dictionary from parameters."""
+    # These parameters are common to all task types
+    base_obj = {
+        "state": state,
+        "description": description,
+        "creation_timestamp_ms": created_time,
+        "update_timestamp_ms": updated_time,
+        "start_timestamp_ms": started_time,
+        "task_type": task_type,
+        "id": id,
+        "name": f"projects/earthengine-legacy/operations/{id}",
+    }
+
+    if state == states.COMPLETED:
+        base_obj["destination_uris"] = ["https://drive.google.com/"]
+    elif state in [states.FAILED, states.CANCELLED]:
+        base_obj["error_message"] = error_message
+    elif state == states.READY:
+        base_obj["start_timestamp_ms"] = 0
+
+    if state in [
+        states.COMPLETED,
+        states.FAILED,
+        states.CANCELLED,
+        states.RUNNING,
+        states.CANCEL_REQUESTED,
+    ]:
+        base_obj["attempt"] = 1
+
+    return base_obj

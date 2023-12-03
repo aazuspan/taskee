@@ -1,23 +1,9 @@
 import datetime
 
-import pytest
-
 from taskee.utils import (
     _datetime_to_millis,
     _millis_to_datetime,
 )
-
-
-class MockClass:
-    pass
-
-
-class MockSubclassOne(MockClass):
-    pass
-
-
-class MockSubclassTwo(MockClass):
-    pass
 
 
 def test_datetime_to_millis():

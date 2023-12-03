@@ -88,11 +88,8 @@ class TaskManager:
 
     @property
     def events(self) -> tuple[events.Event, ...]:
-        """Retrieve active events from all tasks, sorted by time."""
-        task_events = [task.event for task in self.tasks if task.event is not None]
-        if len(task_events) > 1:
-            task_events = sorted(task_events, key=lambda event: event.time)
-        return tuple(task_events)
+        """Retrieve active events from all tasks."""
+        return tuple([task.event for task in self.tasks if task.event])
 
     @property
     def tasks(self) -> tuple[Task, ...]:

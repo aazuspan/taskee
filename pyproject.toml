@@ -43,6 +43,7 @@ dependencies = ["pre-commit"]
 dependencies = [
     "pytest",
     "pytest-cov",
+    "pushbullet.py",
 ]
 
 [tool.hatch.envs.test.scripts]
