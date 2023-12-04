@@ -1,5 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+import pushbullet
 import pytest
 
 from taskee.taskee import Taskee
@@ -12,6 +13,13 @@ def _mock_ee_initialize():
     """Mock the ee_initialize function."""
     with patch("ee.Initialize"):
         yield
+
+
+@pytest.fixture()
+def mock_service_account_credentials():
+    """Mock the ee.ServiceAccountCredentials class."""
+    with patch("ee.ServiceAccountCredentials") as ServiceAccountCredentials:
+        yield ServiceAccountCredentials
 
 
 @pytest.fixture()
@@ -32,3 +40,24 @@ def initialized_taskee(mock_task_list) -> Taskee:
     with patch("ee.data.getTaskList") as getTaskList:
         getTaskList.return_value = [task._status for task in mock_task_list]
         return Taskee(notifiers=[])
+
+
+@pytest.fixture(autouse=True)
+def mock_native_notifier():
+    """Mock the native notifier."""
+    with patch("notifypy.Notify") as Notify:
+        yield Notify.return_value
+
+
+@pytest.fixture(autouse=True)
+def mock_pushbullet_notifier():
+    """Override Pushbullet instantiation to pass unless the API key is empty."""
+    mock_pb = MagicMock()
+
+    def initialize_mock_pushbullet(key: str):
+        if not key:
+            raise pushbullet.errors.InvalidKeyError
+        return mock_pb
+
+    with patch("pushbullet.Pushbullet", side_effect=initialize_mock_pushbullet):
+        yield mock_pb

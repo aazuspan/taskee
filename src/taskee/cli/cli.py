@@ -17,7 +17,7 @@ modes = {"log": log.start, "dashboard": dashboard.start}
 PRIVATE_KEY_OPTION = click.option(
     "private_key",
     "-k",
-    "--private_key",
+    "--private-key",
     default=None,
     type=click.Path(exists=True, dir_okay=False),
     help="Path to private key file for Earth Engine authentication.",
