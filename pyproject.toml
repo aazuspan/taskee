@@ -58,3 +58,8 @@ show-fixes = true
 
 [tool.ruff.isort]
 known-first-party = ["taskee"]
+
+[tool.pytest.ini_options]
+markers = [
+    "no_config: mark test to run without a config file",
+]

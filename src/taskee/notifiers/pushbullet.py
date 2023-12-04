@@ -34,7 +34,7 @@ def initialize_pushbullet() -> pushbullet.Pushbullet:
     api_key = _get_stored_pushbullet_key(config_path)
 
     store_key = False
-    pb: str | None = None
+    pb = None
     while pb is None:
         try:
             pb = pushbullet.Pushbullet(api_key)

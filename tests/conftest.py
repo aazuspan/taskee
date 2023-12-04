@@ -1,3 +1,4 @@
+import configparser
 from unittest.mock import MagicMock, patch
 
 import pushbullet
@@ -61,3 +62,26 @@ def mock_pushbullet_notifier():
 
     with patch("pushbullet.Pushbullet", side_effect=initialize_mock_pushbullet):
         yield mock_pb
+
+
+@pytest.fixture(autouse=True)
+def mock_config_path(tmpdir):
+    """Mock the config path where credentials are stored."""
+    config_path = tmpdir / "config.ini"
+    with patch("taskee.notifiers.pushbullet.config_path", config_path):
+        yield config_path
+
+
+@pytest.fixture(autouse=True)
+def _mock_config(mock_config_path, request):
+    """Patch in a config file with a fake Pushbullet API key."""
+    # Skip this fixture if the test is marked with `no_config`
+    if "no_config" in request.keywords:
+        return
+
+    fake_key = "fake_key_12345"
+
+    config = configparser.ConfigParser()
+    config["Pushbullet"] = {"api_key": fake_key}
+    with open(mock_config_path, "w") as f:
+        config.write(f)

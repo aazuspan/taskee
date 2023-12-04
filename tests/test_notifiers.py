@@ -8,14 +8,6 @@ from taskee.notifiers import Pushbullet
 from taskee.taskee import Taskee
 
 
-@pytest.fixture()
-def mock_config_path(tmpdir):
-    """Mock the config path where credentials are stored."""
-    config_path = tmpdir / "config.ini"
-    with patch("taskee.notifiers.pushbullet.config_path", config_path):
-        yield config_path
-
-
 def test_native_notifier(mock_task_list, mock_native_notifier):
     """Test that the Native notifier attempts to notify."""
     with patch("ee.data.getTaskList") as getTaskList:
@@ -60,23 +52,18 @@ def test_pushbullet_uninstalled():
             Taskee(notifiers=["pushbullet"])
 
 
-def test_initialize_pushbullet_with_key(mock_config_path):
+def test_initialize_pushbullet_with_key():
     """Test that Pushbullet is initialized with a key."""
-    fake_key = "fake_key_12345"
-
-    config = configparser.ConfigParser()
-    config["Pushbullet"] = {"api_key": fake_key}
-    with open(mock_config_path, "w") as f:
-        config.write(f)
-
     assert Pushbullet()
 
 
-def test_initialize_pushbullet_without_key(tmp_path, mock_config_path):
+@pytest.mark.no_config()
+def test_initialize_pushbullet_without_key(mock_config_path):
     """Test that Pushbullet prompts and stores a new key when none is found."""
     fake_key = "new_fake_key_12345"
 
     with patch("taskee.notifiers.pushbullet.Prompt.ask") as ask:
+        # Provide a new key to the prompt
         ask.return_value = fake_key
         Pushbullet()
         ask.assert_called_once()
