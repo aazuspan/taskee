@@ -11,12 +11,12 @@ from taskee.taskee import Taskee
 from taskee.tasks import Task
 
 
-def tasks(t: Taskee) -> None:
+def tasks(t: Taskee, max_tasks: int) -> None:
     tasks = t.manager.tasks
-    rich.print(create_task_table(tuple(tasks)))
+    rich.print(create_task_table(tuple(tasks), max_tasks))
 
 
-def create_task_table(tasks: tuple[Task, ...]) -> Table:
+def create_task_table(tasks: tuple[Task, ...], max_tasks: int) -> Table:
     """Create a table of tasks."""
     t = Table(
         title="[bold bright_green]Tasks",
@@ -30,7 +30,7 @@ def create_task_table(tasks: tuple[Task, ...]) -> Table:
     t.add_column("Created", justify="right")
     t.add_column("Elapsed", justify="right")
 
-    for task in tasks:
+    for task in tasks[:max_tasks]:
         state_style = get_style(task.state)
         dim_style = "[dim]" if task.state not in states.ACTIVE else ""
         time_created = humanize.naturaltime(task.time_created)
@@ -42,5 +42,8 @@ def create_task_table(tasks: tuple[Task, ...]) -> Table:
             f"{dim_style}{time_created}",
             f"{dim_style}{time_elapsed}",
         )
+
+    if len(tasks) > max_tasks:
+        t.caption = "..."
 
     return t

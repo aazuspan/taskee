@@ -120,8 +120,9 @@ def start_command(
 
 
 @taskee.command(name="tasks")
+@click.option("max_tasks", "-m", "--max-tasks", default=30, help="Max tasks displayed.")
 @PRIVATE_KEY_OPTION
-def tasks_command(private_key: str | None) -> None:
+def tasks_command(max_tasks: int, private_key: str | None) -> None:
     """Display a table of current Earth Engine tasks."""
     if private_key:
         credentials = ee.ServiceAccountCredentials(email=None, key_file=private_key)
@@ -130,7 +131,7 @@ def tasks_command(private_key: str | None) -> None:
 
     with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
         t = Taskee(notifiers=tuple(), credentials=credentials)
-        tasks.tasks(t)
+        tasks.tasks(t, max_tasks=max_tasks)
 
 
 @taskee.command(name="test", short_help="Send test notifications.")
