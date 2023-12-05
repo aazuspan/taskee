@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import configparser
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
@@ -16,10 +18,10 @@ class Pushbullet(Notifier):
         self.pb = initialize_pushbullet()
 
     def send(self, title: str, message: str) -> None:
-        push = self.pb.push_note(title, message)
+        self.pb.push_note(title, message)
 
 
-def initialize_pushbullet() -> "pushbullet.Pushbullet":
+def initialize_pushbullet() -> pushbullet.Pushbullet:
     """Initialize the Pushbullet API and return a Pushbullet object."""
     try:
         import pushbullet
@@ -27,12 +29,12 @@ def initialize_pushbullet() -> "pushbullet.Pushbullet":
         raise ImportError(
             "The `pushbullet` package must be installed to use the Pushbullet notifier."
             " Run `pip install pushbullet.py` to install."
-        )
+        ) from None
 
     api_key = _get_stored_pushbullet_key(config_path)
 
     store_key = False
-    pb: Union[str, None] = None
+    pb = None
     while pb is None:
         try:
             pb = pushbullet.Pushbullet(api_key)
@@ -43,7 +45,7 @@ def initialize_pushbullet() -> "pushbullet.Pushbullet":
             raise ConnectionError(
                 "Failed to connect to Pushbullet! Please make sure you are connected to"
                 " internet and try again."
-            )
+            ) from None
 
     if store_key:
         _store_pushbullet_key(api_key, config_path)
@@ -71,13 +73,12 @@ def _get_stored_pushbullet_key(path: str) -> str:
 
 def _request_pushbullet_key() -> str:
     """Request a Pushbullet API key from the user."""
-    apikey = Prompt.ask("Enter your [yellow bold]Pushbullet[/] API key to continue")
-    return apikey
+    return Prompt.ask("Enter your [yellow bold]Pushbullet[/] API key to continue")
 
 
 def _store_pushbullet_key(key: str, path: str) -> None:
-    """Store the Pushbullet API key in the config file. If the config file does not exist,
-    it will be created.
+    """Store the Pushbullet API key in the config file. If the config file does not
+    exist, it will be created.
 
     Parameters
     ----------

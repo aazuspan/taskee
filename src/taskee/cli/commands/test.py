@@ -1,9 +1,9 @@
-from typing import Tuple
+from __future__ import annotations
 
 from taskee.cli.commands import log
 
 
-def test(notifiers: Tuple[str, ...]) -> None:
+def test(notifiers: tuple[str, ...]) -> None:
     from taskee.dispatcher import Dispatcher
 
     log.logger.setLevel("INFO")

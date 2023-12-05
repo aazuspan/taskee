@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskee"
+dynamic = ["version"]
+description = "Notifications for Earth Engine tasks."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [{ name = "Aaron Zuspan" }]
+keywords = ["earth-engine", "notifications", "tasks", "cli", "command-line"]
+dependencies = [
+    "earthengine-api",
+    "rich",
+    "humanize",
+    "notify-py",
+    "requests",
+    "click",
+    "rich-click>=1.2.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/aazuspan/taskee"
+
+[project.scripts]
+taskee = "taskee.cli.cli:taskee"
+
+[tool.hatch.version]
+path = "src/taskee/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taskee"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src"]
+
+[tool.hatch.envs.default]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.test]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pushbullet.py",
+]
+
+[tool.hatch.envs.test.scripts]
+all = "pytest . {args}"
+cov = "pytest . --cov=src/taskee {args}"
+
+[tool.ruff]
+select = ["E", "I", "F", "B", "FA", "UP", "PT", "Q", "RET", "SIM", "PERF"]
+ignore = ["PERF203"]
+fix = true
+show-fixes = true
+
+[tool.ruff.isort]
+known-first-party = ["taskee"]
+
+[tool.pytest.ini_options]
+markers = [
+    "no_config: mark test to run without a config file",
+]

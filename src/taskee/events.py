@@ -1,13 +1,13 @@
+from __future__ import annotations
+
 import datetime
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Mapping, Set, Tuple, Type
+from typing import TYPE_CHECKING
 
 import humanize  # type: ignore
 
-from taskee import utils
-
 if TYPE_CHECKING:
-    from taskee.tasks import Task
+    from taskee.tasks import Task  # pragma: no cover
 
 
 class Event(ABC):
@@ -19,13 +19,13 @@ class Event(ABC):
     @property
     @abstractmethod
     def message(self) -> str:
-        return ""
+        raise NotImplementedError  # pragma: no cover
 
 
 class TaskEvent(Event, ABC):
     """A Task Event is a type of event originating from an Earth Engine task."""
 
-    def __init__(self, task: "Task"):
+    def __init__(self, task: Task):
         self.task = task
         super().__init__()
 
@@ -46,7 +46,10 @@ class Failed(TaskEvent):
     def message(self) -> str:
         error = self.task.error_message
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
-        return f"Task '{self.task.description}' failed with error '{error}' after {elapsed}."
+        return (
+            f"Task '{self.task.description}' failed with error '{error}' "
+            f"after {elapsed}."
+        )
 
 
 class Completed(TaskEvent):
@@ -57,7 +60,10 @@ class Completed(TaskEvent):
     @property
     def message(self) -> str:
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
-        return f"Task '{self.task.description}' completed successfully! It ran for {elapsed}."
+        return (
+            f"Task '{self.task.description}' completed successfully! "
+            f"It ran for {elapsed}."
+        )
 
 
 class Created(TaskEvent):
@@ -101,29 +107,17 @@ class Started(TaskEvent):
         return f"Task '{self.task.description}' has started processing."
 
 
-def list_events() -> Mapping[str, Type["Event"]]:
-    """List all Event subclasses. Return as a dictionary mapping the subclass name to the
-    class.
+EVENT_TYPES = {
+    "error": Error,
+    "failed": Failed,
+    "completed": Completed,
+    "created": Created,
+    "attempted": Attempted,
+    "cancelled": Cancelled,
+    "started": Started,
+}
 
-    Returns
-    -------
-    Dict[str, Type[Event]]
-        A dictionary mapping the Event name to the class.
-    """
-    return utils._list_subclasses(Event)
 
-
-def get_events(names: Tuple[str, ...]) -> Set[Type[Event]]:
-    """Retrieve a set of subclasses of Event.
-
-    Parameters
-    ----------
-    names : Tuple[str, ...]
-        A list of names of Events to retrieve.
-
-    Returns
-    -------
-    Set[Type[Any]]
-        A set of Events.
-    """
-    return utils._get_subclasses(names, Event)
+def get_event(name: str) -> type[Event]:
+    """Get an event by name."""
+    return EVENT_TYPES[name.lower()]  # type: ignore

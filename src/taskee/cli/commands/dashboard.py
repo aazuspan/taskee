@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import time
 from collections import deque
-from typing import TYPE_CHECKING, Deque, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import humanize  # type: ignore
 from rich import box
@@ -28,14 +30,14 @@ class Dashboard:
     def __init__(
         self,
         t: Taskee,
-        watch_for: Tuple[str, ...] = ("error", "completed", "failed"),
+        watch_for: tuple[str, ...] = ("error", "completed", "failed"),
         interval_minutes: float = 5.0,
     ):
-        self.event_log: Deque["Event"] = deque(maxlen=MAX_ROWS)
+        self.event_log: deque[Event] = deque(maxlen=MAX_ROWS)
         self.last_checked = time.time()
 
         self.t = t
-        self.watch_events = events.get_events(watch_for)
+        self.watch_events = set([events.get_event(name) for name in watch_for])
         self.interval_seconds = interval_minutes * 60.0
 
         self.layout = self.create_layout()
@@ -46,7 +48,7 @@ class Dashboard:
             height=36,
         )
 
-        # Initialize the dashboard before we start Live so we don't render a preview layout
+        # Initialize dashboard before starting Live so we don't render a preview layout
         self.update_display()
 
     @property
@@ -126,7 +128,7 @@ class Dashboard:
             complete_style="bright_yellow",
         )
 
-    def create_tables(self) -> Tuple[Table, Table]:
+    def create_tables(self) -> tuple[Table, Table]:
         n_tasks = MAX_ROWS - min(max(len(self.event_log), 1), MAX_ROWS // 2)
         n_events = MAX_ROWS - n_tasks
 
@@ -135,7 +137,7 @@ class Dashboard:
 
         return task_table, event_table
 
-    def create_task_table(self, max_tasks: Optional[int] = None) -> Table:
+    def create_task_table(self, max_tasks: int | None = None) -> Table:
         """Create a table of tasks."""
         t = Table(
             title="[bold bright_green]Tasks",
@@ -164,7 +166,7 @@ class Dashboard:
 
         return t
 
-    def create_event_table(self, max_events: Optional[int] = None) -> Table:
+    def create_event_table(self, max_events: int | None = None) -> Table:
         """Create a table of events."""
         t = Table(
             title="[bold bright_blue]Events",
@@ -195,7 +197,7 @@ class Dashboard:
 
 def start(
     t: Taskee,
-    watch_for: Tuple[str, ...] = ("error", "completed", "failed"),
+    watch_for: tuple[str, ...] = ("error", "completed", "failed"),
     interval_minutes: float = 5.0,
 ) -> None:
     """Run an indefinite dashboard. This handles scheduling of Earth Engine updates and
