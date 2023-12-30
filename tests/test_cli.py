@@ -155,6 +155,7 @@ def test_start_dashboard_command(
     # Events
     assert "'mock_pending_task' has started" in result.output
     assert "'mock_running_task' completed" in result.output
+    assert "now" in result.output
 
     # Tasks
     assert "RUNNING" in result.output

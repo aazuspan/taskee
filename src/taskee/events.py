@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 @dataclass(repr=False)
 class _Event(ABC):
     title = "Generic Event"
+    time: datetime = field(init=False, default_factory=datetime.now)
 
     @property
     @abstractmethod

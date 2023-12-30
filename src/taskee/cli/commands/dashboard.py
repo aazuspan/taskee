@@ -147,10 +147,8 @@ class _Dashboard:
         t.add_column("Message", justify="left")
         t.add_column("Time", justify="right")
 
-        now = time.time()
-
         for event in tuple(self.event_log)[:max_events]:
-            event_time = humanize.naturaltime(now)
+            event_time = humanize.naturaltime(event.time)
             event_style = STYLES[event.__class__]
             event_name = event.__class__.__name__.replace("Event", "")
             muted_style = "[dim]" if event.__class__ not in self.t.watch_for else ""
