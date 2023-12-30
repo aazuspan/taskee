@@ -3,51 +3,49 @@ from unittest.mock import patch
 
 import pytest
 
-from taskee.events import Failed
 from taskee.notifiers import Pushbullet
 from taskee.taskee import Taskee
 
 
-def test_native_notifier(mock_task_list, mock_native_notifier):
+def test_native_notifier(mock_taskee, mock_running_task, mock_native_notifier):
     """Test that the Native notifier attempts to notify."""
-    with patch("ee.data.getTaskList") as getTaskList:
-        notification = mock_native_notifier
+    mock_running_task.update(state="FAILED", error_message="whoops")
 
-        getTaskList.return_value = [task._status for task in mock_task_list]
-        initialized_taskee = Taskee(notifiers=["native"])
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [mock_running_task.model_dump()]
+        mock_taskee.update()
 
-        mock_task_list[0].update(new_state="FAILED", error_message="whoops")
-        getTaskList.return_value = [task._status for task in mock_task_list]
-        initialized_taskee._update(watch_for=[Failed])
+    mock_taskee.dispatch()
 
-        assert notification.application_name == "taskee"
-        assert notification.title == "Task Failed"
-        assert "'mock_ready_task' failed with error 'whoops'" in notification.message
-        notification.send.assert_called_once()
+    assert mock_native_notifier.application_name == "taskee"
+    assert mock_native_notifier.title == "Task Failed"
+    expected_msg = "'mock_running_task' failed after 10 minutes with error 'whoops'"
+    assert expected_msg in mock_native_notifier.message
+    mock_native_notifier.send.assert_called_once()
 
 
-def test_pushbullet_notifier(mock_task_list, mock_pushbullet_notifier):
+def test_pushbullet_notifier(mock_taskee, mock_running_task, mock_pushbullet_notifier):
     """Test that Pushbullet attempts to notify."""
-    with patch("ee.data.getTaskList") as getTaskList:
-        getTaskList.return_value = [task._status for task in mock_task_list]
-        initialized_taskee = Taskee(notifiers=["pushbullet"])
+    mock_running_task.update(state="FAILED", error_message="uh oh")
 
-        mock_task_list[0].update(new_state="FAILED", error_message="whoops")
-        getTaskList.return_value = [task._status for task in mock_task_list]
-        initialized_taskee._update(watch_for=[Failed])
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [mock_running_task.model_dump()]
+        mock_taskee.update()
 
-        mock_pushbullet_notifier.push_note.assert_called_once()
-        call_args = mock_pushbullet_notifier.push_note.call_args[0]
-        assert call_args[0] == "Task Failed"
-        assert "'mock_ready_task' failed with error 'whoops'" in call_args[1]
+    mock_taskee.dispatch()
+
+    mock_pushbullet_notifier.push_note.assert_called_once()
+    title, msg = mock_pushbullet_notifier.push_note.call_args[0]
+    assert title == "Task Failed"
+    assert "'mock_running_task' failed after 10 minutes with error 'uh oh'" in msg
 
 
 def test_pushbullet_uninstalled():
     """An ImportError should be raised if the pushbullet package is not installed."""
-    with patch("ee.data.getTaskList") as getTaskList, patch.dict(
+    with patch("ee.data.listOperations") as listOperations, patch.dict(
         "sys.modules", {"pushbullet": None}
     ):
-        getTaskList.return_value = []
+        listOperations.return_value = []
         with pytest.raises(ImportError, match="pip install pushbullet.py"):
             Taskee(notifiers=["pushbullet"])
 

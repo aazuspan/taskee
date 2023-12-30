@@ -19,6 +19,7 @@ dependencies = [
     "requests",
     "click",
     "rich-click>=1.2.1",
+    "pydantic",
 ]
 
 [project.urls]
@@ -63,3 +64,6 @@ known-first-party = ["taskee"]
 markers = [
     "no_config: mark test to run without a config file",
 ]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true

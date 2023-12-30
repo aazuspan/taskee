@@ -7,7 +7,7 @@ from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
 
 from taskee.notifiers.notifier import Notifier
-from taskee.utils import config_path
+from taskee.utils import CONFIG_PATH
 
 if TYPE_CHECKING:
     import pushbullet  # type: ignore
@@ -31,7 +31,7 @@ def initialize_pushbullet() -> pushbullet.Pushbullet:
             " Run `pip install pushbullet.py` to install."
         ) from None
 
-    api_key = _get_stored_pushbullet_key(config_path)
+    api_key = _get_stored_pushbullet_key(CONFIG_PATH)
 
     store_key = False
     pb = None
@@ -48,7 +48,7 @@ def initialize_pushbullet() -> pushbullet.Pushbullet:
             ) from None
 
     if store_key:
-        _store_pushbullet_key(api_key, config_path)
+        _store_pushbullet_key(api_key, CONFIG_PATH)
 
     return pb
 

@@ -7,8 +7,8 @@ import time
 from rich.logging import RichHandler
 from rich.status import Status
 
-from taskee import events, states
-from taskee.cli.styles import get_style
+from taskee.cli.styles import STYLES
+from taskee.operation import FINISHED_OPERATION_STATES
 from taskee.taskee import Taskee
 
 logging.basicConfig(
@@ -22,7 +22,6 @@ logger = logging.getLogger("taskee")
 
 def start(
     t: Taskee,
-    watch_for: tuple[str, ...] = ("error", "completed", "failed"),
     interval_minutes: float = 5.0,
 ) -> None:
     """Run an indefinite logger. This handles scheduling of Earth Engine updates and
@@ -30,34 +29,28 @@ def start(
     """
     logger.setLevel("INFO")
 
-    last_checked = time.time()
+    last_checked = 0.0
     interval_seconds = interval_minutes * 60.0
 
-    watch_events = set([events.get_event(name) for name in watch_for])
-
     while True:
-        elapsed = time.time() - last_checked
-        active_tasks = t.manager.active_tasks
+        now = time.time()
+        elapsed = now - last_checked
 
         if elapsed > interval_seconds:
             with Status("[yellow]Updating tasks...", spinner="bouncingBar"):
-                new_events = t._update(watch_events)
-                last_checked = time.time()
-                remaining_tasks = t.manager.active_tasks
+                new_events = t.update()
+                t.dispatch()
 
-            if len(new_events) > 1:
-                new_events = tuple(sorted(new_events, key=lambda event: event.time))
+                last_checked = now
 
             for event in new_events:
                 message = event.message
-                if (
-                    isinstance(event, events.TaskEvent)
-                    and event.task.state in states.FINISHED
-                ):
-                    message += f" [dim]({len(remaining_tasks)} tasks remaining)[/]"
+                state = event.task.metadata.state if hasattr(event, "task") else None
+                if state in FINISHED_OPERATION_STATES:
+                    message += f" [dim]({len(t.active_tasks)} tasks remaining)[/]"
 
-                muted_style = "[dim]" if event.__class__ not in watch_events else ""
-                style = get_style(event.__class__)
+                muted_style = "[dim]" if event.__class__ not in t.watch_for else ""
+                style = STYLES[event.__class__]
                 logger.info(
                     f"[{style.color}]{style.emoji} {event.__class__.__name__}[/]:"
                     f" {muted_style}{message}"
@@ -68,7 +61,7 @@ def start(
             next_update = datetime.datetime.now() + delta
             next_update_msg = (
                 f"[yellow]Next update at {next_update:%H:%M:%S}... "
-                f"({len(active_tasks)} active tasks)"
+                f"({len(t.active_tasks)} active tasks)"
             )
 
             with Status(next_update_msg, spinner="bouncingBar"):

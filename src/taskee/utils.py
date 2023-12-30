@@ -1,19 +1,22 @@
-from __future__ import annotations
-
-import datetime
+import difflib
 import os
+from enum import EnumMeta
 
-config_path = os.path.expanduser("~/.config/taskee.ini")
-
-
-def _millis_to_datetime(
-    millis: str, tz: datetime.timezone | None = None
-) -> datetime.datetime:
-    """Convert a timestamp in milliseconds (e.g. from Earth Engine) to a datetime
-    object."""
-    return datetime.datetime.fromtimestamp(int(millis) / 1000.0, tz=tz)
+CONFIG_PATH = os.path.expanduser("~/.config/taskee.ini")
 
 
-def _datetime_to_millis(dt: datetime.datetime) -> int:
-    """Convert a datetime to a timestamp in milliseconds"""
-    return int(dt.timestamp() * 1000)
+class SuggestionEnumMeta(EnumMeta):
+    """A metaclass that raises with suggested matches and options for failed lookups."""
+
+    def __getitem__(cls, key: str):
+        """Get an event by name."""
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            members = list(cls.__members__.keys())
+
+            msg = f"{cls.__name__} '{key}' not in {members}."
+            if close_match := difflib.get_close_matches(key.upper(), members, n=1):
+                msg += f" Did you mean '{close_match[0]}'?"
+
+            raise KeyError(msg) from None
