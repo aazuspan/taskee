@@ -2,6 +2,7 @@
 
 [![Earth Engine Python](https://img.shields.io/badge/Earth%20Engine%20API-Python-green)](https://developers.google.com/earth-engine/tutorials/community/intro-to-python-api)
 [![PyPI version](https://badge.fury.io/py/taskee.svg)](https://badge.fury.io/py/taskee)
+[![CI](https://github.com/aazuspan/taskee/actions/workflows/ci.yaml/badge.svg)](https://github.com/aazuspan/taskee/actions/workflows/ci.yaml)
 
 `taskee` is a command-line tool for monitoring [Google Earth Engine](https://developers.google.com/earth-engine) tasks that can send notifications to your phone or computer to let you know when your tasks finish.
 
