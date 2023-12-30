@@ -30,7 +30,7 @@ def create_task_table(tasks: tuple[Operation, ...], max_tasks: int) -> Table:
     t.add_column("EECUs", justify="center")
 
     for task in tasks[:max_tasks]:
-        state = task.metadata.state
+        state = task.metadata.state.value
         eecus = task.metadata.batchEecuUsageSeconds
 
         state_style = STYLES[state]

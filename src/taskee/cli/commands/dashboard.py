@@ -152,7 +152,7 @@ class _Dashboard:
         for event in tuple(self.event_log)[:max_events]:
             event_time = humanize.naturaltime(now)
             event_style = STYLES[event.__class__]
-            event_name = event.__class__.__name__
+            event_name = event.__class__.__name__.replace("Event", "")
             muted_style = "[dim]" if event.__class__ not in self.t.watch_for else ""
             t.add_row(
                 f"[{event_style.color}]{event_name}[/] {event_style.emoji}",
