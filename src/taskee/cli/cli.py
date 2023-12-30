@@ -5,8 +5,8 @@ import rich_click as click  # type: ignore
 from rich.status import Status
 
 from taskee.cli.commands import dashboard, log, tasks, test
-from taskee.events import EVENT_TYPES, Error
-from taskee.notifiers import NOTIFIER_TYPES
+from taskee.events import ErrorEvent, EventEnum
+from taskee.notifiers import NotifierEnum
 from taskee.taskee import Taskee
 
 click.rich_click.SHOW_ARGUMENTS = True
@@ -20,7 +20,7 @@ PRIVATE_KEY_OPTION = click.option(
     "--private-key",
     default=None,
     type=click.Path(exists=True, dir_okay=False),
-    help="Path to private key file for Earth Engine authentication.",
+    help="Optional path to private key file for Earth Engine authentication.",
 )
 
 NOTIFIERS_OPTION = click.option(
@@ -29,14 +29,16 @@ NOTIFIERS_OPTION = click.option(
     "--notifier",
     default=("native",),
     multiple=True,
-    type=click.Choice(list(NOTIFIER_TYPES.keys()) + ["all"], case_sensitive=False),
-    help="One or more notifiers to run (or all).",
+    type=click.Choice(
+        list(NotifierEnum.__members__.keys()) + ["all"], case_sensitive=False
+    ),
+    help="The notifier to run (or all).",
 )
 
 INTERVAL_OPTION = click.option(
     "interval_mins",
     "-i",
-    "--interval_mins",
+    "--interval-mins",
     default=5.0,
     help="Minutes between queries to Earth Engine for task updates.",
 )
@@ -44,7 +46,9 @@ INTERVAL_OPTION = click.option(
 WATCH_FOR_ARG = click.argument(
     "watch_for",
     nargs=-1,
-    type=click.Choice(choices=list(EVENT_TYPES.keys()) + ["all"], case_sensitive=False),
+    type=click.Choice(
+        choices=list(EventEnum.__members__.keys()) + ["all"], case_sensitive=False
+    ),
 )
 
 
@@ -94,9 +98,9 @@ def start_command(
     ```
     """
     if "all" in notifiers:
-        notifiers = tuple(NOTIFIER_TYPES.keys())
+        notifiers = tuple(NotifierEnum.__members__.keys())
     if "all" in watch_for:
-        watch_for = tuple(EVENT_TYPES.keys())
+        watch_for = tuple(EventEnum.__members__.keys())
     elif len(watch_for) == 0:
         watch_for = ("completed", "failed", "error")
 
@@ -106,14 +110,14 @@ def start_command(
         credentials = "persistent"
 
     mode_func = modes[mode]
-    t = Taskee(notifiers=notifiers, credentials=credentials)
+    t = Taskee(notifiers=notifiers, watch_for=watch_for, credentials=credentials)
 
     try:
-        mode_func(t, watch_for=watch_for, interval_minutes=interval_mins)
+        mode_func(t, interval_minutes=interval_mins)
     except Exception as e:
         if "error" in [event.lower() for event in watch_for]:
-            event = Error()
-            t.dispatcher.notify(event.title, event.message)
+            t.event_queue.append(ErrorEvent())
+            t.dispatch()
         raise e
     except KeyboardInterrupt:
         return
@@ -131,7 +135,7 @@ def tasks_command(max_tasks: int, private_key: str | None) -> None:
 
     with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
         t = Taskee(notifiers=tuple(), credentials=credentials)
-        tasks.tasks(t, max_tasks=max_tasks)
+        tasks.tasks(t.tasks, max_tasks=max_tasks)
 
 
 @taskee.command(name="test", short_help="Send test notifications.")
@@ -148,9 +152,10 @@ def test_command(notifiers: tuple[str, ...]) -> None:
     ```
     """
     if "all" in notifiers:
-        notifiers = tuple(NOTIFIER_TYPES.keys())
+        notifiers = tuple(NotifierEnum.__members__.keys())
 
-    test.test(notifiers)
+    notifier_instances = tuple(NotifierEnum[notifier].value() for notifier in notifiers)
+    test.test(notifier_instances)
 
 
 if __name__ == "__main__":

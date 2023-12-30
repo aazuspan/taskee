@@ -1,21 +1,21 @@
-import datetime
+import re
+from enum import Enum
 
-from taskee.utils import (
-    _datetime_to_millis,
-    _millis_to_datetime,
-)
+import pytest
 
-
-def test_datetime_to_millis():
-    """Test that a datetime in UTC is correctly converted to Unix milliseconds"""
-    dt = datetime.datetime(year=2020, month=4, day=14, tzinfo=datetime.timezone.utc)
-    millis = _datetime_to_millis(dt)
-    assert millis == 1586822400000
+from taskee.utils import SuggestionEnumMeta
 
 
-def test_millis_to_datetime():
-    millis = 1586822400000
-    dt = _millis_to_datetime(millis, tz=datetime.timezone.utc)
-    assert dt == datetime.datetime(
-        year=2020, month=4, day=14, tzinfo=datetime.timezone.utc
-    )
+def test_suggestion_enum():
+    """Test that SuggestionEnumMeta raises with suggestions."""
+
+    class TestEnum(Enum, metaclass=SuggestionEnumMeta):
+        """A test enum."""
+
+        A = 1
+        B = 2
+        C = 3
+
+    msg = "TestEnum 'CC' not in ['A', 'B', 'C']. Did you mean 'C'?"
+    with pytest.raises(KeyError, match=re.escape(msg)):
+        TestEnum["CC"]

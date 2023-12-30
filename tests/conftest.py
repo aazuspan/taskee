@@ -6,7 +6,31 @@ import pytest
 
 from taskee.taskee import Taskee
 
-from .mock_tasks import MockTask
+from .mock_operation import MockOperation
+
+
+@pytest.fixture()
+def mock_pending_task():
+    return MockOperation(state="PENDING", description="mock_pending_task")
+
+
+@pytest.fixture()
+def mock_running_task():
+    return MockOperation(state="RUNNING", description="mock_running_task")
+
+
+@pytest.fixture()
+def mock_succeeded_task():
+    return MockOperation(state="SUCCEEDED", description="mock_succeeded_task")
+
+
+@pytest.fixture()
+def mock_task_list(mock_pending_task, mock_running_task, mock_succeeded_task):
+    return [
+        mock_pending_task,
+        mock_running_task,
+        mock_succeeded_task,
+    ]
 
 
 @pytest.fixture(autouse=True)
@@ -24,23 +48,11 @@ def mock_service_account_credentials():
 
 
 @pytest.fixture()
-def mock_task_list():
-    return [
-        MockTask(state="READY", description="mock_ready_task"),
-        MockTask(state="RUNNING", description="mock_running_task"),
-        MockTask(state="COMPLETED", description="mock_completed_task"),
-        MockTask(state="CANCEL_REQUESTED", description="mock_cancel_requested_task"),
-        MockTask(state="CANCELLED", description="mock_cancelled_task"),
-        MockTask(state="FAILED", description="mock_failed_task"),
-    ]
-
-
-@pytest.fixture()
-def initialized_taskee(mock_task_list) -> Taskee:
+def mock_taskee(mock_task_list) -> Taskee:
     """A Taskee instance initialized with mock tasks."""
-    with patch("ee.data.getTaskList") as getTaskList:
-        getTaskList.return_value = [task._status for task in mock_task_list]
-        return Taskee(notifiers=[])
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [task.model_dump() for task in mock_task_list]
+        return Taskee(notifiers=["native", "pushbullet"])
 
 
 @pytest.fixture(autouse=True)
@@ -68,14 +80,15 @@ def mock_pushbullet_notifier():
 def mock_config_path(tmpdir):
     """Mock the config path where credentials are stored."""
     config_path = tmpdir / "config.ini"
-    with patch("taskee.notifiers.pushbullet.config_path", config_path):
+    with patch("taskee.notifiers.pushbullet.CONFIG_PATH", config_path):
         yield config_path
 
 
 @pytest.fixture(autouse=True)
 def _mock_config(mock_config_path, request):
     """Patch in a config file with a fake Pushbullet API key."""
-    # Skip this fixture if the test is marked with `no_config`
+    # Skip this fixture if the test is marked with `no_config`. This will mean there is
+    # no config file at the mocked path.
     if "no_config" in request.keywords:
         return
 

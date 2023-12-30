@@ -1,58 +1,61 @@
 from __future__ import annotations
 
-import datetime
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import humanize  # type: ignore
 
+from taskee.utils import SuggestionEnumMeta
+
 if TYPE_CHECKING:
-    from taskee.tasks import Task  # pragma: no cover
+    from taskee.operation import Operation  # pragma: no cover
 
 
-class Event(ABC):
+@dataclass(repr=False)
+class _Event(ABC):
     title = "Generic Event"
-
-    def __init__(self) -> None:
-        self.time = datetime.datetime.now()
 
     @property
     @abstractmethod
     def message(self) -> str:
         raise NotImplementedError  # pragma: no cover
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.message}>"
 
-class TaskEvent(Event, ABC):
+
+@dataclass(repr=False)
+class _TaskEvent(_Event, ABC):
     """A Task Event is a type of event originating from an Earth Engine task."""
 
-    def __init__(self, task: Task):
-        self.task = task
-        super().__init__()
+    task: Operation
 
 
-class Error(Event):
+class ErrorEvent(_Event):
     """An Error event occurs when taskee crashes."""
 
     title = "Oops!"
     message = "Something went wrong and taskee needs to be restarted."
 
 
-class Failed(TaskEvent):
+class FailedEvent(_TaskEvent):
     """A Failed event occurs when a task fails to complete."""
 
     title = "Task Failed"
 
     @property
     def message(self) -> str:
-        error = self.task.error_message
+        error = self.task.error.message if self.task.error else "Unknown"
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
         return (
-            f"Task '{self.task.description}' failed with error '{error}' "
-            f"after {elapsed}."
+            f"Task '{self.task.metadata.description}' failed after {elapsed} "
+            f"with error '{error}'."
         )
 
 
-class Completed(TaskEvent):
+class CompletedEvent(_TaskEvent):
     """A Completed event occurs when a task completes successfully."""
 
     title = "Task Completed"
@@ -60,64 +63,59 @@ class Completed(TaskEvent):
     @property
     def message(self) -> str:
         elapsed = humanize.naturaldelta(self.task.time_elapsed)
+        eecus = self.task.metadata.batchEecuUsageSeconds
         return (
-            f"Task '{self.task.description}' completed successfully! "
-            f"It ran for {elapsed}."
+            f"Task '{self.task.metadata.description}' completed successfully! "
+            f"It ran for {elapsed} and used {eecus:.2f} EECU-seconds."
         )
 
 
-class Created(TaskEvent):
+class CreatedEvent(_TaskEvent):
     """A Created event occurs when a new task is created."""
 
     title = "Task Created"
 
     @property
     def message(self) -> str:
-        return f"Task '{self.task.description}' was created."
+        return f"Task '{self.task.metadata.description}' was created."
 
 
-class Attempted(TaskEvent):
-    """An Attempted event occurs when an attempt fails and a new attempt beings."""
+class AttemptedEvent(_TaskEvent):
+    """An Attempted event occurs when an attempt fails and a new attempt begins."""
 
     title = "Attempt Failed"
 
     @property
     def message(self) -> str:
-        n = self.task._status["attempt"]
-        return f"Task '{self.task.description}' attempt {n - 1} failed."
+        n = self.task.metadata.attempt
+        return f"Task '{self.task.metadata.description}' attempt {n - 1} failed."
 
 
-class Cancelled(TaskEvent):
+class CancelledEvent(_TaskEvent):
     """A Cancelled event occurs when a task is cancelled by the user."""
 
     title = "Task Cancelled"
 
     @property
     def message(self) -> str:
-        return f"Task '{self.task.description}' was cancelled."
+        return f"Task '{self.task.metadata.description}' was cancelled."
 
 
-class Started(TaskEvent):
-    """A Started event occurs when a ready task begins running."""
+class StartedEvent(_TaskEvent):
+    """A Started event occurs when a pending task begins running."""
 
     title = "Task Started"
 
     @property
     def message(self) -> str:
-        return f"Task '{self.task.description}' has started processing."
+        return f"Task '{self.task.metadata.description}' has started processing."
 
 
-EVENT_TYPES = {
-    "error": Error,
-    "failed": Failed,
-    "completed": Completed,
-    "created": Created,
-    "attempted": Attempted,
-    "cancelled": Cancelled,
-    "started": Started,
-}
-
-
-def get_event(name: str) -> type[Event]:
-    """Get an event by name."""
-    return EVENT_TYPES[name.lower()]  # type: ignore
+class EventEnum(Enum, metaclass=SuggestionEnumMeta):
+    ERROR = ErrorEvent
+    FAILED = FailedEvent
+    COMPLETED = CompletedEvent
+    CREATED = CreatedEvent
+    ATTEMPTED = AttemptedEvent
+    CANCELLED = CancelledEvent
+    STARTED = StartedEvent

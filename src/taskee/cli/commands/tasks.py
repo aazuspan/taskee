@@ -5,21 +5,19 @@ import rich
 from rich import box
 from rich.table import Table
 
-from taskee import states
-from taskee.cli.styles import get_style
-from taskee.taskee import Taskee
-from taskee.tasks import Task
+from taskee.cli.styles import STYLES
+from taskee.operation import ACTIVE_OPERATION_STATES, Operation
 
 
-def tasks(t: Taskee, max_tasks: int) -> None:
-    tasks = t.manager.tasks
-    rich.print(create_task_table(tuple(tasks), max_tasks))
+def tasks(tasks: tuple[Operation, ...], max_tasks: int) -> None:
+    table = create_task_table(tasks, max_tasks)
+    rich.print(table)
 
 
-def create_task_table(tasks: tuple[Task, ...], max_tasks: int) -> Table:
-    """Create a table of tasks."""
+def create_task_table(tasks: tuple[Operation, ...], max_tasks: int) -> Table:
+    """Create and print a table of tasks."""
     t = Table(
-        title="[bold bright_green]Tasks",
+        title="[bold bright_green]Earth Engine Tasks",
         box=box.SIMPLE_HEAD,
         header_style="bright_green",
         expand=True,
@@ -29,18 +27,24 @@ def create_task_table(tasks: tuple[Task, ...], max_tasks: int) -> Table:
     t.add_column("Description", justify="left")
     t.add_column("Created", justify="right")
     t.add_column("Elapsed", justify="right")
+    t.add_column("EECUs", justify="center")
 
     for task in tasks[:max_tasks]:
-        state_style = get_style(task.state)
-        dim_style = "[dim]" if task.state not in states.ACTIVE else ""
-        time_created = humanize.naturaltime(task.time_created)
+        state = task.metadata.state.value
+        eecus = task.metadata.batchEecuUsageSeconds
+
+        state_style = STYLES[state]
+        dim_style = "[dim]" if state not in ACTIVE_OPERATION_STATES else ""
+        time_created = humanize.naturaltime(task.metadata.createTime)
         time_elapsed = humanize.naturaldelta(task.time_elapsed)
+        eecus_str = "-" if not eecus else f"{eecus:.0f}"
 
         t.add_row(
-            f"[{state_style.color}]{task.state}[/] {state_style.emoji}",
-            f"{dim_style}{task.description}",
+            f"[{state_style.color}]{state}[/] {state_style.emoji}",
+            f"{dim_style}{task.metadata.description}",
             f"{dim_style}{time_created}",
             f"{dim_style}{time_elapsed}",
+            f"{dim_style}{eecus_str}",
         )
 
     if len(tasks) > max_tasks:

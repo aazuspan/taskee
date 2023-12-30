@@ -1,44 +1,41 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
-from taskee import events, states
-
-COLOR_SUCCESS = "green"
-COLOR_ERROR = "red"
-COLOR_INFO = "cyan"
-COLOR_WARNING = "yellow"
-
-if TYPE_CHECKING:
-    from taskee.events import Event
+from taskee import events
+from taskee.operation import OperationState
 
 
+class Color(Enum):
+    SUCCESS = "green"
+    ERROR = "red"
+    INFO = "cyan"
+    WARNING = "yellow"
+
+
+@dataclass
 class Style:
-    def __init__(self, color: str, emoji: str = ""):
-        self.color = color
-        self.emoji = emoji
+    color: str
+    emoji: str
 
 
-styles: Mapping[Any, Style] = {
-    events.Error: Style(color=COLOR_ERROR, emoji=":exclamation:"),
-    events.Failed: Style(color=COLOR_ERROR, emoji=":fire:"),
-    events.Completed: Style(color=COLOR_SUCCESS, emoji=":evergreen_tree:"),
-    events.Created: Style(color=COLOR_INFO, emoji=":seedling:"),
-    events.Started: Style(color=COLOR_INFO, emoji=":herb:"),
-    events.Attempted: Style(color=COLOR_WARNING, emoji=":fallen_leaf:"),
-    events.Cancelled: Style(color=COLOR_ERROR, emoji=":axe:"),
-    states.CANCEL_REQUESTED: Style(color=COLOR_ERROR, emoji=":triangular_flag:"),
-    states.CANCELLED: Style(color=COLOR_ERROR, emoji=":prohibited:"),
-    states.COMPLETED: Style(color=COLOR_SUCCESS, emoji=":white_heavy_check_mark:"),
-    states.FAILED: Style(color=COLOR_ERROR, emoji=":x:"),
-    states.READY: Style(color=COLOR_INFO, emoji=":hourglass:"),
-    states.RUNNING: Style(color=COLOR_INFO, emoji=":wrench:"),
+STYLES: Mapping[Any, Style] = {
+    # Events
+    events.ErrorEvent: Style(color=Color.ERROR.value, emoji="❗"),
+    events.FailedEvent: Style(color=Color.ERROR.value, emoji="🔥"),
+    events.CompletedEvent: Style(color=Color.SUCCESS.value, emoji="🌲"),
+    events.CreatedEvent: Style(color=Color.INFO.value, emoji="🌱"),
+    events.StartedEvent: Style(color=Color.INFO.value, emoji="🌿"),
+    events.AttemptedEvent: Style(color=Color.WARNING.value, emoji="🍂"),
+    events.CancelledEvent: Style(color=Color.ERROR.value, emoji="🪓"),
+    # States
+    OperationState.CANCELLING: Style(color=Color.ERROR.value, emoji="🚩"),
+    OperationState.CANCELLED: Style(color=Color.ERROR.value, emoji="🚫"),
+    OperationState.SUCCEEDED: Style(color=Color.SUCCESS.value, emoji="✔️"),
+    OperationState.FAILED: Style(color=Color.ERROR.value, emoji="❌"),
+    OperationState.PENDING: Style(color=Color.INFO.value, emoji="⏳"),
+    OperationState.RUNNING: Style(color=Color.INFO.value, emoji="🔧"),
 }
-
-
-def get_style(obj: str | type[Event]) -> Style:
-    """Retrieve the Style for a given object or class."""
-    try:
-        return styles[obj]
-    except KeyError:
-        raise KeyError(f"'{obj}' does not have a registered style.") from None
