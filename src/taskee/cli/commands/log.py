@@ -7,7 +7,7 @@ import time
 from rich.logging import RichHandler
 from rich.status import Status
 
-from taskee.cli.styles import STYLES
+from taskee.cli.styles import get_style
 from taskee.operation import FINISHED_OPERATION_STATES
 from taskee.taskee import Taskee
 
@@ -50,7 +50,7 @@ def start(
                     message += f" [dim]({len(t.active_tasks)} tasks remaining)[/]"
 
                 muted_style = "[dim]" if event.__class__ not in t.watch_for else ""
-                style = STYLES[event.__class__]
+                style = get_style(event.__class__)
                 logger.info(
                     f"[{style.color}]{style.emoji} {event.__class__.__name__}[/]:"
                     f" {muted_style}{message}"

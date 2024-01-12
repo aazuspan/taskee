@@ -5,7 +5,7 @@ import rich
 from rich import box
 from rich.table import Table
 
-from taskee.cli.styles import STYLES
+from taskee.cli.styles import get_style
 from taskee.operation import ACTIVE_OPERATION_STATES, Operation
 
 
@@ -33,7 +33,7 @@ def create_task_table(tasks: tuple[Operation, ...], max_tasks: int) -> Table:
         state = task.metadata.state.value
         eecus = task.metadata.batchEecuUsageSeconds
 
-        state_style = STYLES[state]
+        state_style = get_style(state)
         dim_style = "[dim]" if state not in ACTIVE_OPERATION_STATES else ""
         time_created = humanize.naturaltime(task.metadata.createTime)
         time_elapsed = humanize.naturaldelta(task.time_elapsed)

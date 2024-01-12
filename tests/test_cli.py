@@ -6,6 +6,8 @@ from click.testing import CliRunner
 
 from taskee.cli.cli import taskee
 
+from .mock_operation import MockOperation
+
 # Parameterize over the --notifier options
 PARAMETRIZE_NOTIFIER = pytest.mark.parametrize(
     "notifier",
@@ -246,6 +248,18 @@ def test_tasks_truncates(cli, mock_task_list):
     assert "mock_running_task" in result.output
     assert "..." in result.output
     assert "mock_succeeded_task" not in result.output
+
+def test_tasks_unknown_state(cli):
+    """The `task` command should handle unknown task states."""
+    unexpected_op = MockOperation(description="unexpected_task", state="Ddf!sD?sdfl")
+
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [unexpected_op.model_dump()]
+        result = cli.invoke(taskee, ["tasks"])
+
+    assert result.exit_code == 0, result.output
+    assert "unexpected_task" in result.output
+    assert "UNKNOWN" in result.output
 
 
 @PARAMETRIZE_NOTIFIER
