@@ -52,7 +52,7 @@ all = "pytest . {args}"
 cov = "pytest . --cov=src/taskee {args}"
 
 [tool.ruff]
-select = ["E", "I", "F", "B", "FA", "UP", "PT", "Q", "RET", "SIM", "PERF"]
+select = ["E", "I", "F", "B", "FA", "UP", "PT", "Q", "RET", "SIM", "PERF", "ERA"]
 ignore = ["PERF203"]
 fix = true
 show-fixes = true

@@ -249,6 +249,7 @@ def test_tasks_truncates(cli, mock_task_list):
     assert "..." in result.output
     assert "mock_succeeded_task" not in result.output
 
+
 def test_tasks_unknown_state(cli):
     """The `task` command should handle unknown task states."""
     unexpected_op = MockOperation(description="unexpected_task", state="Ddf!sD?sdfl")
