@@ -33,8 +33,8 @@ STYLES: Mapping[Any, Style] = {
     events.CancelledEvent: Style(color=Color.ERROR.value, emoji="🪓"),
     # States
     OperationState.CANCELLING: Style(color=Color.ERROR.value, emoji="🚩"),
-    OperationState.CANCELLED: Style(color=Color.ERROR.value, emoji="🚫"),
-    OperationState.SUCCEEDED: Style(color=Color.SUCCESS.value, emoji="✔️"),
+    OperationState.CANCELLED: Style(color=Color.ERROR.value, emoji="✖️"),
+    OperationState.SUCCEEDED: Style(color=Color.SUCCESS.value, emoji="✅"),
     OperationState.FAILED: Style(color=Color.ERROR.value, emoji="❌"),
     OperationState.PENDING: Style(color=Color.INFO.value, emoji="⏳"),
     OperationState.RUNNING: Style(color=Color.INFO.value, emoji="🔧"),
