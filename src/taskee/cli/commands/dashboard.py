@@ -14,7 +14,7 @@ from rich.table import Table
 from rich.text import Text
 
 from taskee.cli.commands.tasks import create_task_table
-from taskee.cli.styles import STYLES
+from taskee.cli.styles import get_style
 from taskee.taskee import Taskee
 
 if TYPE_CHECKING:
@@ -149,7 +149,7 @@ class _Dashboard:
 
         for event in tuple(self.event_log)[:max_events]:
             event_time = humanize.naturaltime(event.time)
-            event_style = STYLES[event.__class__]
+            event_style = get_style(event.__class__)
             event_name = event.__class__.__name__.replace("Event", "")
             muted_style = "[dim]" if event.__class__ not in self.t.watch_for else ""
             t.add_row(

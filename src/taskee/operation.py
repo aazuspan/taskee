@@ -7,8 +7,10 @@ from typing import Any, Union
 from pydantic import BaseModel, ConfigDict
 
 from taskee import events
+from taskee.utils import fallback_enum
 
 
+@fallback_enum("UNKNOWN")
 class OperationState(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -18,11 +20,15 @@ class OperationState(str, Enum):
     CANCELLED = "CANCELLED"
 
 
+@fallback_enum("UNKNOWN")
 class OperationType(str, Enum):
     EXPORT_FEATURES = "EXPORT_FEATURES"
     EXPORT_IMAGE = "EXPORT_IMAGE"
     EXPORT_VIDEO = "EXPORT_VIDEO"
-    UNKNOWN = "UNKNOWN"
+    EXPORT_TILES = "EXPORT_TILES"
+    INGEST = "INGEST"
+    INGEST_IMAGE = "INGEST_IMAGE"
+    INGEST_TABLE = "INGEST_TABLE"
 
 
 class OperationStage(BaseModel):
@@ -45,12 +51,12 @@ class OperationMetadata(BaseModel):
     """Metadata about an Operation."""
 
     state: OperationState
+    type: OperationType
     description: str
     createTime: datetime
     updateTime: datetime
     startTime: datetime
     endTime: Union[datetime, None] = None
-    type: OperationType = OperationType.UNKNOWN
     attempt: int = 1
     progress: float = 0.0
     stages: Union[tuple[OperationStage, ...], None] = None

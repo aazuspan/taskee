@@ -39,3 +39,8 @@ STYLES: Mapping[Any, Style] = {
     OperationState.PENDING: Style(color=Color.INFO.value, emoji="⏳"),
     OperationState.RUNNING: Style(color=Color.INFO.value, emoji="🔧"),
 }
+
+
+def get_style(obj: Any) -> Style:
+    """Get the style for an object."""
+    return STYLES.get(obj, Style(color=Color.INFO.value, emoji="❓"))
