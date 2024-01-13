@@ -67,16 +67,7 @@ class Taskee:
     def update(self) -> tuple[events._Event, ...]:
         """Update tasks and add any events to the queue."""
         new_events = self._get_events()
-
-        for event in new_events:
-            message = event.message
-            state = event.task.metadata.state if hasattr(event, "task") else None
-
-            if state in FINISHED_OPERATION_STATES:
-                message += f" ({len(self.active_tasks)} tasks remaining)"
-
-            self.event_queue.append(event)
-
+        self.event_queue.extend(new_events)
         return new_events
 
     def dispatch(self) -> None:
@@ -86,8 +77,13 @@ class Taskee:
             if not isinstance(event, tuple(self.watch_for)):
                 continue
 
+            message = event.message
+            state = event.task.metadata.state if hasattr(event, "task") else None
+            if state in FINISHED_OPERATION_STATES:
+                message += f" ({len(self.active_tasks)} tasks remaining)"
+
             for notifier in self.notifiers:
-                notifier.send(event.title, event.message)
+                notifier.send(event.title, message)
 
     def _get_events(self) -> tuple[events._Event, ...]:
         """Update all tasks and return any events that occured since the last update."""
