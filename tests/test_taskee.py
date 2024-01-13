@@ -98,3 +98,23 @@ def test_taskee_only_notifies_watched_tasks(
 
     # Only the watched-for events should notify
     assert mock_native_notifier.send.call_count == 2
+
+
+def test_taskee_reports_remaining(
+    mock_taskee, mock_pending_task, mock_running_task, mock_native_notifier
+):
+    """A completed event should report the number of remaining tasks."""
+    mock_taskee.watch_for = [events.CompletedEvent]
+    mock_pending_task.update(state="SUCCEEDED")
+
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [
+            mock_pending_task.model_dump(),
+            mock_running_task.model_dump(),
+        ]
+        mock_taskee.update()
+
+    mock_taskee.dispatch()
+
+    expected_msg = "(1 tasks remaining)"
+    assert expected_msg in mock_native_notifier.message
