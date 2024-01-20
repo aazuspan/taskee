@@ -50,7 +50,7 @@ class FailedEvent(_TaskEvent):
     @property
     def message(self) -> str:
         error = self.task.error.message if self.task.error else "Unknown"
-        elapsed = humanize.naturaldelta(self.task.time_elapsed)
+        elapsed = humanize.naturaldelta(self.task.runtime)
         return (
             f"Task '{self.task.metadata.description}' failed after {elapsed} "
             f"with error '{error}'."
@@ -64,11 +64,11 @@ class CompletedEvent(_TaskEvent):
 
     @property
     def message(self) -> str:
-        elapsed = humanize.naturaldelta(self.task.time_elapsed)
+        elapsed = humanize.naturaldelta(self.task.runtime)
         eecus = self.task.metadata.batchEecuUsageSeconds
         return (
             f"Task '{self.task.metadata.description}' completed successfully! "
-            f"It ran for {elapsed} and used {eecus:.2f} EECU-seconds."
+            f"It ran for {elapsed} and used {eecus:,.0f} EECU-seconds."
         )
 
 

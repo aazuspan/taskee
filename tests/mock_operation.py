@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timezone
 
 from taskee.operation import (
     Operation,
@@ -58,7 +58,7 @@ class MockOperation(Operation):
             self.error = OperationError(code=1, message="Cancelled.")
 
         elif self.metadata.state == OperationState.PENDING:
-            self.metadata.startTime = datetime.utcfromtimestamp(0)
+            self.metadata.startTime = datetime.fromtimestamp(0, tz=timezone.utc)
 
         elif self.metadata.state == OperationState.SUCCEEDED:
             self.metadata.destinationUris = ("https://drive.google.com/",)

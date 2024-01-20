@@ -26,8 +26,8 @@ def create_task_table(tasks: tuple[Operation, ...], max_tasks: int) -> Table:
     t.add_column("State", justify="right")
     t.add_column("Description", justify="left")
     t.add_column("Created", justify="right")
-    t.add_column("Elapsed", justify="right")
-    t.add_column("EECUs", justify="center")
+    t.add_column("Runtime", justify="right")
+    t.add_column("EECUs", justify="right")
 
     for task in tasks[:max_tasks]:
         state = task.metadata.state.value
@@ -35,15 +35,15 @@ def create_task_table(tasks: tuple[Operation, ...], max_tasks: int) -> Table:
 
         state_style = get_style(state)
         dim_style = "[dim]" if state not in ACTIVE_OPERATION_STATES else ""
-        time_created = humanize.naturaltime(task.metadata.createTime)
-        time_elapsed = humanize.naturaldelta(task.time_elapsed)
-        eecus_str = "-" if not eecus else f"{eecus:.0f}"
+        time_since_creation = humanize.naturaltime(task.time_since_creation)
+        runtime = humanize.naturaldelta(task.runtime) if task.runtime else "-"
+        eecus_str = "-" if not eecus else f"{eecus:,.0f}"
 
         t.add_row(
             f"[{state_style.color}]{state}[/] {state_style.emoji}",
             f"{dim_style}{task.metadata.description}",
-            f"{dim_style}{time_created}",
-            f"{dim_style}{time_elapsed}",
+            f"{dim_style}{time_since_creation}",
+            f"{dim_style}{runtime}",
             f"{dim_style}{eecus_str}",
         )
 

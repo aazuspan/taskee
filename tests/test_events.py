@@ -22,7 +22,7 @@ def test_failed_event(mock_taskee, mock_pending_task):
 
     assert isinstance(event, FailedEvent)
 
-    expected_msg = "'mock_pending_task' failed after 10 minutes with error 'whoops'"
+    expected_msg = "'mock_pending_task' failed after a moment with error 'whoops'"
     assert expected_msg in event.message
 
 
