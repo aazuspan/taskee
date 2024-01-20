@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Union
 
@@ -77,8 +77,19 @@ class Operation(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     @property
-    def time_elapsed(self) -> float:
-        return (self.metadata.updateTime - self.metadata.createTime).total_seconds()
+    def time_since_creation(self) -> float:
+        """Return the time since the operation was created in seconds."""
+        now = datetime.now(tz=timezone.utc)
+        return (now - self.metadata.createTime).total_seconds()
+
+    @property
+    def runtime(self) -> float:
+        """Return the total runtime of the operation in seconds."""
+        # Unstarted tasks list their start time as 1970-01-01T00:00:00Z UTC
+        if not self.metadata.startTime.timestamp():
+            return 0.0
+
+        return (self.metadata.updateTime - self.metadata.startTime).total_seconds()
 
     def __lt__(self, other: Operation) -> bool:
         """Compare two operations based on their status and creation time.

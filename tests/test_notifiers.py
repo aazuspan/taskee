@@ -16,10 +16,10 @@ def test_native_notifier(mock_taskee, mock_running_task, mock_native_notifier):
         mock_taskee.update()
 
     mock_taskee.dispatch()
-
+    print(mock_running_task)
     assert mock_native_notifier.application_name == "taskee"
     assert mock_native_notifier.title == "Task Failed"
-    expected_msg = "'mock_running_task' failed after 10 minutes with error 'whoops'"
+    expected_msg = "'mock_running_task' failed after 9 minutes with error 'whoops'"
     assert expected_msg in mock_native_notifier.message
     mock_native_notifier.send.assert_called_once()
 
@@ -37,7 +37,7 @@ def test_pushbullet_notifier(mock_taskee, mock_running_task, mock_pushbullet_not
     mock_pushbullet_notifier.push_note.assert_called_once()
     title, msg = mock_pushbullet_notifier.push_note.call_args[0]
     assert title == "Task Failed"
-    assert "'mock_running_task' failed after 10 minutes with error 'uh oh'" in msg
+    assert "'mock_running_task' failed after 9 minutes with error 'uh oh'" in msg
 
 
 def test_pushbullet_uninstalled():
