@@ -62,7 +62,6 @@ class MockOperation(Operation):
 
         elif self.metadata.state == OperationState.SUCCEEDED:
             self.metadata.destinationUris = ("https://drive.google.com/",)
-            self.metadata.batchEecuUsageSeconds = 42.0
             self.metadata.progress = 1.0
 
         if self.metadata.state in COMPLETED_STATES:
