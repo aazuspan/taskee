@@ -203,8 +203,10 @@ def test_start_command_handles_crash(mode, cli, mock_native_notifier):
     assert "taskee needs to be restarted" in mock_native_notifier.message
 
 
-def test_tasks_command(cli, mock_task_list):
+def test_tasks_command(cli, mock_task_list, mock_succeeded_task):
     """The `tasks` command should list tasks."""
+    mock_succeeded_task.metadata.batchEecuUsageSeconds = 42.0
+
     with patch("ee.data.listOperations") as listOperations:
         listOperations.return_value = [task.model_dump() for task in mock_task_list]
         result = cli.invoke(taskee, ["tasks"])

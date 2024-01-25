@@ -108,3 +108,18 @@ def test_started_event(mock_taskee, mock_pending_task):
 
     expected_msg = "'mock_pending_task' has started processing"
     assert expected_msg in event.message
+
+
+def test_succeeded_event_with_null_eecus(mock_taskee):
+    """Some tasks will succeed and not report EECUs (e.g. asset ingestion)."""
+    mock_succeeded_ingestion = MockOperation(
+        "SUCCEEDED",
+        description="mock_ingestion",
+    )
+
+    with patch("ee.data.listOperations") as listOperations:
+        listOperations.return_value = [mock_succeeded_ingestion.model_dump()]
+        event = mock_taskee.update()[0]
+
+    assert "'mock_ingestion' completed successfully" in event.message
+    assert "used 0 EECU-seconds" in event.message

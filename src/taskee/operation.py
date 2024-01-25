@@ -63,7 +63,7 @@ class OperationMetadata(BaseModel):
     stages: Union[tuple[OperationStage, ...], None] = None
     scriptUri: Union[str, None] = None
     destinationUris: Union[tuple[str, ...], None] = None
-    batchEecuUsageSeconds: Union[float, None] = None
+    batchEecuUsageSeconds: Union[float, None] = 0.0
 
 
 class Operation(BaseModel):
