@@ -82,7 +82,7 @@ def mock_pushbullet_notifier():
 def mock_config_path(tmpdir):
     """Mock the config path where credentials are stored."""
     config_path = tmpdir / "config.ini"
-    with patch("taskee.notifiers.pushbullet.CONFIG_PATH", config_path):
+    with patch("taskee.taskee.CONFIG_PATH", config_path):
         yield config_path
 
 

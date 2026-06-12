@@ -6,7 +6,6 @@ from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
 
 from taskee.notifiers.notifier import Notifier
-from taskee.utils import CONFIG_PATH
 from taskee.vendor import pushbullet
 
 
@@ -20,6 +19,8 @@ class Pushbullet(Notifier):
 
 def initialize_pushbullet() -> pushbullet.Pushbullet:
     """Initialize the Pushbullet API and return a Pushbullet object."""
+    from taskee.taskee import CONFIG_PATH
+
     api_key = _get_stored_pushbullet_key(CONFIG_PATH)
 
     store_key = False

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections import deque
 from datetime import datetime
 
@@ -13,6 +14,9 @@ from taskee.notifiers import NotifierEnum
 from taskee.operation import FINISHED_OPERATION_STATES, Operation
 
 Credentials = OAuthCredentials | ServiceAccountCredentials | str
+
+
+CONFIG_PATH = os.path.expanduser("~/.config/taskee.ini")
 
 
 class Taskee:

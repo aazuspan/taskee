@@ -7,10 +7,8 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from taskee import events
-from taskee.utils import fallback_enum
 
 
-@fallback_enum("UNKNOWN")
 class OperationState(StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -18,9 +16,14 @@ class OperationState(StrEnum):
     FAILED = "FAILED"
     CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
+    UNKNOWN = "UNKNOWN"
+
+    @classmethod
+    def _missing_(cls, _: Any) -> OperationState:
+        """Fallback to UNKNOWN for invalid states."""
+        return cls.UNKNOWN
 
 
-@fallback_enum("UNKNOWN")
 class OperationType(StrEnum):
     EXPORT_FEATURES = "EXPORT_FEATURES"
     EXPORT_IMAGE = "EXPORT_IMAGE"
@@ -30,6 +33,12 @@ class OperationType(StrEnum):
     INGEST = "INGEST"
     INGEST_IMAGE = "INGEST_IMAGE"
     INGEST_TABLE = "INGEST_TABLE"
+    UNKNOWN = "UNKNOWN"
+
+    @classmethod
+    def _missing_(cls, _: Any) -> OperationState:
+        """Fallback to UNKNOWN for invalid states."""
+        return cls.UNKNOWN
 
 
 class OperationStage(BaseModel):
