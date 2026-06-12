@@ -1,10 +1,10 @@
 import configparser
 from unittest.mock import MagicMock, patch
 
-import pushbullet
 import pytest
 
 from taskee.taskee import Taskee
+from taskee.vendor import pushbullet
 
 from .mock_operation import MockOperation
 
@@ -72,7 +72,9 @@ def mock_pushbullet_notifier():
             raise pushbullet.errors.InvalidKeyError
         return mock_pb
 
-    with patch("pushbullet.Pushbullet", side_effect=initialize_mock_pushbullet):
+    with patch(
+        "taskee.vendor.pushbullet.Pushbullet", side_effect=initialize_mock_pushbullet
+    ):
         yield mock_pb
 
 

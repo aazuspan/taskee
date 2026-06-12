@@ -34,7 +34,6 @@ dev = [
     "ruff>=0.15.8",
     "pytest",
     "pytest-cov",
-    "pushbullet.py",
 ]
 
 [tool.ruff]

@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import configparser
-from typing import TYPE_CHECKING
 
 from requests.exceptions import ConnectionError
 from rich.prompt import Prompt
 
 from taskee.notifiers.notifier import Notifier
 from taskee.utils import CONFIG_PATH
-
-if TYPE_CHECKING:
-    import pushbullet  # type: ignore
+from taskee.vendor import pushbullet
 
 
 class Pushbullet(Notifier):
@@ -23,14 +20,6 @@ class Pushbullet(Notifier):
 
 def initialize_pushbullet() -> pushbullet.Pushbullet:
     """Initialize the Pushbullet API and return a Pushbullet object."""
-    try:
-        import pushbullet
-    except ImportError:
-        raise ImportError(
-            "The `pushbullet` package must be installed to use the Pushbullet notifier."
-            " Run `pip install pushbullet.py` to install."
-        ) from None
-
     api_key = _get_stored_pushbullet_key(CONFIG_PATH)
 
     store_key = False
