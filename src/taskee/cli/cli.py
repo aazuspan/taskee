@@ -10,7 +10,7 @@ from taskee.notifiers import NotifierEnum
 from taskee.taskee import Taskee
 
 click.rich_click.SHOW_ARGUMENTS = True
-click.rich_click.USE_MARKDOWN = True
+click.rich_click.TEXT_MARKUP = True
 
 modes = {"log": log.start, "dashboard": dashboard.start}
 

@@ -54,6 +54,11 @@ known-first-party = ["taskee"]
 markers = [
     "no_config: mark test to run without a config file",
 ]
+filterwarnings = [
+    # loguru 0.6.0 (pinned transitively by notify-py) uses the deprecated
+    # asyncio.iscoroutinefunction; nothing we can fix without downgrading notify-py.
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning:loguru",
+]
 
 [tool.poe.tasks]
 lint = "ruff check . --fix"

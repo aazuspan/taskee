@@ -51,6 +51,8 @@ class OperationError(BaseModel):
 class OperationMetadata(BaseModel):
     """Metadata about an Operation."""
 
+    model_config = ConfigDict(validate_assignment=True)
+
     state: OperationState
     type: OperationType
     description: str
