@@ -9,22 +9,22 @@ from taskee.taskee import Taskee
 from .mock_operation import MockOperation
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_pending_task():
     return MockOperation(state="PENDING", description="mock_pending_task")
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_running_task():
     return MockOperation(state="RUNNING", description="mock_running_task")
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_succeeded_task():
     return MockOperation(state="SUCCEEDED", description="mock_succeeded_task")
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_task_list(mock_pending_task, mock_running_task, mock_succeeded_task):
     return [
         mock_pending_task,
@@ -40,14 +40,14 @@ def _mock_ee_initialize():
         yield
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_service_account_credentials():
     """Mock the ee.ServiceAccountCredentials class."""
     with patch("ee.ServiceAccountCredentials") as ServiceAccountCredentials:
         yield ServiceAccountCredentials
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_taskee(mock_task_list) -> Taskee:
     """A Taskee instance initialized with mock tasks."""
     with patch("ee.data.listOperations") as listOperations:

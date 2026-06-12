@@ -21,19 +21,19 @@ PARAMETRIZE_WATCH_FOR = pytest.mark.parametrize(
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def cli():
     return CliRunner(echo_stdin=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def _keyboardinterrupt_on_sleep():
     """Patch `time.sleep` to raise KeyboardInterrupt, killing long-running commands."""
     with patch("time.sleep", side_effect=KeyboardInterrupt):
         yield
 
 
-@pytest.fixture()
+@pytest.fixture
 def _runtimeerror_on_sleep():
     """Patch `time.sleep` to raise RuntimeError, killing long-running commands."""
     with patch("time.sleep", side_effect=RuntimeError):
@@ -78,9 +78,11 @@ def test_start_log_command(
         update_count += 1
         sleep(SLEEP_TIME)
 
-    with patch("ee.data.listOperations") as listOperations, patch(
-        "taskee.cli.commands.log.time.sleep", side_effect=update_or_interrupt
-    ), patch("taskee.cli.commands.log.logger.info") as info:
+    with (
+        patch("ee.data.listOperations") as listOperations,
+        patch("taskee.cli.commands.log.time.sleep", side_effect=update_or_interrupt),
+        patch("taskee.cli.commands.log.logger.info") as info,
+    ):
         args = ["--interval-mins", UPDATE_INTERVAL, "--notifier", notifier]
         result = cli.invoke(taskee, ["start", "log", *watch_for, *args])
 
@@ -142,8 +144,9 @@ def test_start_dashboard_command(
         update_count += 1
         sleep(SLEEP_TIME)
 
-    with patch("ee.data.listOperations") as listOperations, patch(
-        "taskee.cli.commands.log.time.sleep", side_effect=update_or_interrupt
+    with (
+        patch("ee.data.listOperations") as listOperations,
+        patch("taskee.cli.commands.log.time.sleep", side_effect=update_or_interrupt),
     ):
         args = ["--interval-mins", UPDATE_INTERVAL, "--notifier", notifier]
         result = cli.invoke(taskee, ["start", "dashboard", *watch_for, *args])

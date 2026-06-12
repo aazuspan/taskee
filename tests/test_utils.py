@@ -1,5 +1,5 @@
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 
 import pytest
 
@@ -21,7 +21,7 @@ def test_suggestion_enum():
 
 def test_fallback_enum():
     @fallback_enum(fallback="UNKNOWN")
-    class TestStrEnum(str, Enum):
+    class TestStrEnum(StrEnum):
         A = "A"
         B = "B"
         C = "C"
@@ -31,7 +31,7 @@ def test_fallback_enum():
     with pytest.raises(TypeError, match="value must match the enum type"):
 
         @fallback_enum(fallback=1)
-        class TestStrEnum(str, Enum):
+        class TestStrEnum(StrEnum):
             A = "A"
             B = "B"
             C = "C"

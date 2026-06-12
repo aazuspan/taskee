@@ -1,14 +1,10 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "taskee"
-dynamic = ["version"]
+version = "0.0.4"
 description = "Notifications for Earth Engine tasks."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [{ name = "Aaron Zuspan" }]
 keywords = ["earth-engine", "notifications", "tasks", "cli", "command-line"]
 dependencies = [
@@ -22,42 +18,37 @@ dependencies = [
     "pydantic",
 ]
 
+[build-system]
+requires = ["uv_build>=0.11.1,<0.12.0"]
+build-backend = "uv_build"
+
 [project.urls]
 Homepage = "https://github.com/aazuspan/taskee"
 
 [project.scripts]
 taskee = "taskee.cli.cli:taskee"
 
-[tool.hatch.version]
-path = "src/taskee/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/taskee"]
-
-[tool.hatch.build.targets.sdist]
-include = ["/src"]
-
-[tool.hatch.envs.default]
-dependencies = ["pre-commit"]
-
-[tool.hatch.envs.test]
-dependencies = [
+[dependency-groups]
+dev = [
+    "poethepoet>=0.44.0",
+    "ruff>=0.15.8",
     "pytest",
     "pytest-cov",
     "pushbullet.py",
 ]
 
-[tool.hatch.envs.test.scripts]
-all = "pytest . {args}"
-cov = "pytest . --cov=src/taskee {args}"
-
 [tool.ruff]
-select = ["E", "I", "F", "B", "FA", "UP", "PT", "Q", "RET", "SIM", "PERF", "ERA"]
-ignore = ["PERF203"]
 fix = true
 show-fixes = true
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+select = ["E", "I", "F", "B", "FA", "UP", "PT", "Q", "RET", "SIM", "PERF", "ERA"]
+ignore = ["PERF203"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+[tool.ruff.lint.isort]
 known-first-party = ["taskee"]
 
 [tool.pytest.ini_options]
@@ -65,5 +56,8 @@ markers = [
     "no_config: mark test to run without a config file",
 ]
 
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
+[tool.poe.tasks]
+lint = "ruff check . --fix"
+format = "ruff format ."
+check = ["lint", "format"]
+test = "pytest"

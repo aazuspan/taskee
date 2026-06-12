@@ -1,7 +1,8 @@
 import difflib
 import os
+from collections.abc import Callable
 from enum import EnumMeta
-from typing import Any, Callable
+from typing import Any
 
 CONFIG_PATH = os.path.expanduser("~/.config/taskee.ini")
 

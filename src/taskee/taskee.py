@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import deque
 from datetime import datetime
-from typing import Union
 
 import ee
 import humanize
@@ -13,7 +12,7 @@ from taskee import events
 from taskee.notifiers import NotifierEnum
 from taskee.operation import FINISHED_OPERATION_STATES, Operation
 
-Credentials = Union[OAuthCredentials, ServiceAccountCredentials, str]
+Credentials = OAuthCredentials | ServiceAccountCredentials | str
 
 
 class Taskee:

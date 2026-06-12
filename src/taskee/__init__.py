@@ -1,5 +1,10 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from .taskee import Taskee
 
-__version__ = "0.0.4"
+try:
+    __version__ = version("taskee")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 __all__ = ["Taskee"]
