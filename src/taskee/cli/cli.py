@@ -23,6 +23,14 @@ PRIVATE_KEY_OPTION = click.option(
     help="Optional path to private key file for Earth Engine authentication.",
 )
 
+PROJECT_OPTION = click.option(
+    "project",
+    "-p",
+    "--project",
+    default=None,
+    help="Optional Google Cloud project ID to use for Earth Engine.",
+)
+
 NOTIFIERS_OPTION = click.option(
     "notifiers",
     "-n",
@@ -77,12 +85,14 @@ def taskee() -> None:
 @NOTIFIERS_OPTION
 @INTERVAL_OPTION
 @PRIVATE_KEY_OPTION
+@PROJECT_OPTION
 def start_command(
     mode: str,
     watch_for: tuple[str, ...],
     notifiers: tuple[str, ...],
     interval_mins: float,
     private_key: str | None,
+    project: str | None,
 ) -> None:
     """
     Start running the notification system. Select a mode
@@ -110,7 +120,12 @@ def start_command(
         credentials = "persistent"
 
     mode_func = modes[mode]
-    t = Taskee(notifiers=notifiers, watch_for=watch_for, credentials=credentials)
+    t = Taskee(
+        notifiers=notifiers,
+        watch_for=watch_for,
+        credentials=credentials,
+        project=project,
+    )
 
     try:
         mode_func(t, interval_minutes=interval_mins)
@@ -126,7 +141,8 @@ def start_command(
 @taskee.command(name="tasks")
 @click.option("max_tasks", "-m", "--max-tasks", default=30, help="Max tasks displayed.")
 @PRIVATE_KEY_OPTION
-def tasks_command(max_tasks: int, private_key: str | None) -> None:
+@PROJECT_OPTION
+def tasks_command(max_tasks: int, private_key: str | None, project: str | None) -> None:
     """Display a table of current Earth Engine tasks."""
     if private_key:
         credentials = ee.ServiceAccountCredentials(email=None, key_file=private_key)
@@ -134,7 +150,7 @@ def tasks_command(max_tasks: int, private_key: str | None) -> None:
         credentials = "persistent"
 
     with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
-        t = Taskee(notifiers=tuple(), credentials=credentials)
+        t = Taskee(notifiers=tuple(), credentials=credentials, project=project)
         tasks.tasks(t.tasks, max_tasks=max_tasks)
 
 

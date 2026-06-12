@@ -26,6 +26,7 @@ class Taskee:
         notifiers: tuple[()] | tuple[str, ...] = ("native",),
         watch_for: tuple[()] | tuple[str, ...] = ("completed", "failed", "error"),
         credentials: Credentials = "persistent",
+        project: str | None = None,
     ):
         """
         Parameters
@@ -38,8 +39,11 @@ class Taskee:
             Credentials for initializing Earth Engine, e.g. from
             ee.ServiceAccountCredentials. If not provided, the default persistent
             credentials will be used.
+        project : str, optional
+            The Google Cloud project ID to use for Earth Engine. If not provided,
+            the default project for the credentials will be used.
         """
-        ee.Initialize(credentials=credentials)
+        ee.Initialize(credentials=credentials, project=project)
         self.notifiers = [NotifierEnum[name.upper()].value() for name in notifiers]
         self.watch_for = [events.EventEnum[name.upper()].value for name in watch_for]
         self.tasks: tuple[Operation, ...] = tuple()
