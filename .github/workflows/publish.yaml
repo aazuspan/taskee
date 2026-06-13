@@ -1,6 +1,7 @@
 # Adapted from: https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 name: Publish to PyPI
 on:
+    workflow_dispatch:
     push:
         tags:
             # Publish when a tag is pushed
@@ -17,10 +18,10 @@ jobs:
                 persist-credentials: false
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v8
+              uses: astral-sh/setup-uv@v7
 
             - name: Set up Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version: '3.x'
 
