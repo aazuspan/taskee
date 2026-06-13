@@ -1,6 +1,6 @@
 [project]
 name = "taskee"
-version = "0.0.4"
+version = "0.1.0"
 description = "Notifications for Earth Engine tasks."
 readme = "README.md"
 license = { file = "LICENSE" }
