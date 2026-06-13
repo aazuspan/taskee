@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from enum import Enum
 
-from taskee.utils import SuggestionEnumMeta
-
 from .native import Native
 from .pushbullet import Pushbullet
 
 
-class NotifierEnum(Enum, metaclass=SuggestionEnumMeta):
+class NotifierEnum(Enum):
     NATIVE = Native
     PUSHBULLET = Pushbullet
 

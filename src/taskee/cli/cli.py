@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import ee
 import rich_click as click  # type: ignore
 from rich.status import Status
@@ -9,8 +11,11 @@ from taskee.events import ErrorEvent, EventEnum
 from taskee.notifiers import NotifierEnum
 from taskee.taskee import Taskee
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 click.rich_click.SHOW_ARGUMENTS = True
-click.rich_click.USE_MARKDOWN = True
+click.rich_click.TEXT_MARKUP = True
 
 modes = {"log": log.start, "dashboard": dashboard.start}
 
@@ -21,6 +26,14 @@ PRIVATE_KEY_OPTION = click.option(
     default=None,
     type=click.Path(exists=True, dir_okay=False),
     help="Optional path to private key file for Earth Engine authentication.",
+)
+
+PROJECT_OPTION = click.option(
+    "project",
+    "-p",
+    "--project",
+    default=None,
+    help="Optional Google Cloud project ID to use for Earth Engine.",
 )
 
 NOTIFIERS_OPTION = click.option(
@@ -56,47 +69,30 @@ WATCH_FOR_ARG = click.argument(
 @click.version_option()
 def taskee() -> None:
     """
-    Monitor Earth Engine tasks and send notifications when they change states.  
+    Monitor Earth Engine tasks and send notifications when they change states.
     \
-    
+
     **Examples**
 
     ```bash
     $ taskee test
     $ taskee tasks
-    $ taskee start log
-    $ taskee start dashboard failed completed -n pushbullet -i 0.5
+    $ taskee log
+    $ taskee dashboard failed completed -n pushbullet -i 0.5
     ```
     """
     return
 
 
-@taskee.command(name="start", short_help="Start running the notification system.")
-@click.argument("mode", nargs=1, type=click.Choice(choices=modes.keys()))
-@WATCH_FOR_ARG
-@NOTIFIERS_OPTION
-@INTERVAL_OPTION
-@PRIVATE_KEY_OPTION
-def start_command(
-    mode: str,
+def _run_mode(
+    mode_func: Callable[..., None],
     watch_for: tuple[str, ...],
     notifiers: tuple[str, ...],
     interval_mins: float,
     private_key: str | None,
+    project: str | None,
 ) -> None:
-    """
-    Start running the notification system. Select a mode
-    and one or more event types to watch for (or all).
-    \
-    
-    **Examples**
-
-    ```bash
-    $ taskee start dashboard failed completed -n pushbullet -i 5
-    $ taskee start log all
-    $ taskee start log --private-key .private-key.json
-    ```
-    """
+    """Initialize and run the notification system in the given mode."""
     if "all" in notifiers:
         notifiers = tuple(NotifierEnum.__members__.keys())
     if "all" in watch_for:
@@ -109,8 +105,12 @@ def start_command(
     else:
         credentials = "persistent"
 
-    mode_func = modes[mode]
-    t = Taskee(notifiers=notifiers, watch_for=watch_for, credentials=credentials)
+    t = Taskee(
+        notifiers=notifiers,
+        watch_for=watch_for,
+        credentials=credentials,
+        project=project,
+    )
 
     try:
         mode_func(t, interval_minutes=interval_mins)
@@ -123,10 +123,95 @@ def start_command(
         return
 
 
+@taskee.command(name="log", short_help="Log task events as they occur.")
+@WATCH_FOR_ARG
+@NOTIFIERS_OPTION
+@INTERVAL_OPTION
+@PRIVATE_KEY_OPTION
+@PROJECT_OPTION
+def log_command(
+    watch_for: tuple[str, ...],
+    notifiers: tuple[str, ...],
+    interval_mins: float,
+    private_key: str | None,
+    project: str | None,
+) -> None:
+    """
+    Run the notification system, printing minimal logs as events occur. Select
+    one or more event types to watch for (or all).
+    \
+
+    **Examples**
+
+    ```bash
+    $ taskee log all
+    $ taskee log failed completed -n pushbullet -i 5
+    $ taskee log --private-key .private-key.json
+    ```
+    """
+    _run_mode(log.start, watch_for, notifiers, interval_mins, private_key, project)
+
+
+@taskee.command(name="dashboard", short_help="Show a live-updating dashboard.")
+@WATCH_FOR_ARG
+@NOTIFIERS_OPTION
+@INTERVAL_OPTION
+@PRIVATE_KEY_OPTION
+@PROJECT_OPTION
+def dashboard_command(
+    watch_for: tuple[str, ...],
+    notifiers: tuple[str, ...],
+    interval_mins: float,
+    private_key: str | None,
+    project: str | None,
+) -> None:
+    """
+    Run the notification system with a live-updating dashboard. Select
+    one or more event types to watch for (or all).
+    \
+
+    **Examples**
+
+    ```bash
+    $ taskee dashboard all
+    $ taskee dashboard failed completed -n pushbullet -i 5
+    $ taskee dashboard --private-key .private-key.json
+    ```
+    """
+    _run_mode(
+        dashboard.start, watch_for, notifiers, interval_mins, private_key, project
+    )
+
+
+@taskee.command(name="start", hidden=True)
+@click.argument("mode", nargs=1, type=click.Choice(choices=modes.keys()))
+@WATCH_FOR_ARG
+@NOTIFIERS_OPTION
+@INTERVAL_OPTION
+@PRIVATE_KEY_OPTION
+@PROJECT_OPTION
+def start_command(
+    mode: str,
+    watch_for: tuple[str, ...],
+    notifiers: tuple[str, ...],
+    interval_mins: float,
+    private_key: str | None,
+    project: str | None,
+) -> None:
+    click.secho(
+        f"Warning: `taskee start {mode}` is deprecated and will be removed in a "
+        f"future release. Use `taskee {mode}` instead.",
+        fg="yellow",
+        err=True,
+    )
+    _run_mode(modes[mode], watch_for, notifiers, interval_mins, private_key, project)
+
+
 @taskee.command(name="tasks")
 @click.option("max_tasks", "-m", "--max-tasks", default=30, help="Max tasks displayed.")
 @PRIVATE_KEY_OPTION
-def tasks_command(max_tasks: int, private_key: str | None) -> None:
+@PROJECT_OPTION
+def tasks_command(max_tasks: int, private_key: str | None, project: str | None) -> None:
     """Display a table of current Earth Engine tasks."""
     if private_key:
         credentials = ee.ServiceAccountCredentials(email=None, key_file=private_key)
@@ -134,7 +219,7 @@ def tasks_command(max_tasks: int, private_key: str | None) -> None:
         credentials = "persistent"
 
     with Status("Retrieving tasks from Earth Engine...", spinner="bouncingBar"):
-        t = Taskee(notifiers=tuple(), credentials=credentials)
+        t = Taskee(notifiers=tuple(), credentials=credentials, project=project)
         tasks.tasks(t.tasks, max_tasks=max_tasks)
 
 

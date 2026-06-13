@@ -1,6 +1,10 @@
-MIT License
+The code in this directory is adapted from the pushbullet.py package
+(https://github.com/rbrcsk/pushbullet.py), which is distributed under the
+following license:
 
-Copyright (c) 2026 Aaron Zuspan
+The MIT License (MIT)
+
+Copyright (c) 2014 Richard Borcsik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

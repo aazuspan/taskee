@@ -32,8 +32,7 @@ Run the setup steps below as needed.
 
 <details>
   <summary><b>Pushbullet</b> (optional)</summary>
-  If you want to receive mobile notifications (Android only), you'll need to create or connect an account with <a href="https://pushbullet.com">Pushbullet</a>, download the app on your device(s), and install the <a href="https://github.com/rbrcsk/pushbullet.py">Pushbullet Python API</a> using <code>pip install pushbullet.py</code>.
-  Once Pushbullet is installed and you're logged in, go to your <a href="https://www.pushbullet.com/#settings">Account Settings</a>, create an Access Token, and copy the API key. The first time you run <code>taskee</code> with a <code>pushbullet</code> notifier, you'll need to enter your API key. That key will be stored locally so you don't have to enter it again.
+  If you want to receive mobile notifications (Android only), you'll need to create or connect an account with <a href="https://pushbullet.com">Pushbullet</a> and download the app on your device(s). Once Pushbullet is installed and you're logged in, go to your <a href="https://www.pushbullet.com/#settings">Account Settings</a>, create an Access Token, and copy the API key. The first time you run <code>taskee</code> with a <code>pushbullet</code> notifier, you'll need to enter your API key. That key will be stored locally so you don't have to enter it again.
 </details></br>
 
 <details>
@@ -55,33 +54,32 @@ Usage: taskee [OPTIONS] COMMAND [ARGS]...
   Examples
       $ taskee test
       $ taskee tasks
-      $ taskee start log
-      $ taskee start dashboard failed completed -n pushbullet -i 0.5
+      $ taskee log
+      $ taskee dashboard failed completed -n pushbullet -i 0.5
 
 Options:
   --version  Show the version and exit.
   --help     Show this message and exit.
 
 Commands:
-  start  Start running the notification system.
-  tasks  Display a table of current Earth Engine tasks.
-  test   Send test notifications.
+  dashboard  Show a live-updating dashboard.
+  log        Log task events as they occur.
+  tasks      Display a table of current Earth Engine tasks.
+  test       Send test notifications.
 ```
 
-## Starting taskee
+## Running taskee
 
-The `taskee start` command initializes and runs the notification system. It will continue running until you cancel it, periodically checking your Earth Engine tasks and sending you notifications.
-
-`taskee start` requires one argument: `mode`.
+The `taskee dashboard` and `taskee log` commands initialize and run the notification system. They will continue running until you cancel them, periodically checking your Earth Engine tasks and sending you notifications.
 
 ### Choosing a Mode
 
-There are two modes that `taskee start` can run in: `dashboard` and `log`.
+There are two modes that `taskee` can run in: `dashboard` and `log`.
 
 `dashboard` shows a live-updating dashboard that makes it easy to visually keep track of your tasks and events.
 
 ```bash
-taskee start dashboard
+taskee dashboard
 ```
 
 ![A dashboard showing live-updating tasks and events](assets/dashboard.gif)
@@ -89,7 +87,7 @@ taskee start dashboard
 `log` is designed to be run in the background and prints minimal logs as events occur.
 
 ```bash
-taskee start log
+taskee log
 ```
 
 ![A terminal showing logs of new events.](assets/log.gif)
@@ -111,13 +109,13 @@ There are a lot of possible events that can happen to Earth Engine tasks. The li
 By default, `taskee` will notify you of `errors` and `completed` or `failed` tasks, but you can specify which events to watch for by listing them when you launch `taskee`. For example:
 
 ```bash
-taskee start dashboard failed attempted cancelled error
+taskee dashboard failed attempted cancelled error
 ```
 
 You can also use `all` as a shortcut and `taskee` will notify you of all events.
 
 ```bash
-taskee start dashboard all
+taskee dashboard all
 ```
 
 ### Selecting Notifiers
@@ -130,7 +128,7 @@ By default, `taskee` will use the `native` notification system built into your c
 If you want notifications on other devices, set up Pushbullet and then select it with the `-n --notifier` option.
 
 ```bash
-taskee start dashboard --notifier pushbullet
+taskee dashboard --notifier pushbullet
 ```
 
 ![](assets/notification_pushbullet.gif)
@@ -138,7 +136,7 @@ taskee start dashboard --notifier pushbullet
 Like with events, you can use `all` as a shortcut and `taskee` will send both `native` and `pushbullet` notifications.
 
 ```bash
-taskee start dashboard -n all
+taskee dashboard -n all
 ```
 
 ### Other Options
@@ -146,7 +144,7 @@ taskee start dashboard -n all
 You can set how often tasks are re-checked (in minutes) using the `-i --interval_mins` option. 
 
 ```bash
-taskee start dashboard -i 10
+taskee dashboard -i 10
 ```
 
 > **Warning**  
@@ -157,7 +155,7 @@ taskee start dashboard -i 10
 By default, `taskee` uses the persistent credentials stored on your local machine (whichever account you authenticated last). To use a [service account](https://developers.google.com/earth-engine/guides/service_account) instead, pass the relative path to your private key file using the `-k --private-key` option.
 
 ```bash
-taskee start dashboard -k path/to/private-key.json
+taskee dashboard -k path/to/private-key.json
 ```
 
 ### Example
@@ -165,7 +163,7 @@ taskee start dashboard -k path/to/private-key.json
 Using what we learned above, let's set up `taskee` to start running in `log` mode, check for `cancelled` or `completed` task events, send us notifications using `pushbullet`, and update every `30` minutes.
 
 ```bash
-taskee start log cancelled completed -n pushbullet -i 30
+taskee log cancelled completed -n pushbullet -i 30
 ```
 
 ## Other Commands

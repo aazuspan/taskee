@@ -1,27 +1,30 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Union
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
 from taskee import events
-from taskee.utils import fallback_enum
 
 
-@fallback_enum("UNKNOWN")
-class OperationState(str, Enum):
+class OperationState(StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
+    UNKNOWN = "UNKNOWN"
+
+    @classmethod
+    def _missing_(cls, _: Any) -> OperationState:
+        """Fallback to UNKNOWN for invalid states."""
+        return cls.UNKNOWN
 
 
-@fallback_enum("UNKNOWN")
-class OperationType(str, Enum):
+class OperationType(StrEnum):
     EXPORT_FEATURES = "EXPORT_FEATURES"
     EXPORT_IMAGE = "EXPORT_IMAGE"
     EXPORT_VIDEO = "EXPORT_VIDEO"
@@ -30,14 +33,20 @@ class OperationType(str, Enum):
     INGEST = "INGEST"
     INGEST_IMAGE = "INGEST_IMAGE"
     INGEST_TABLE = "INGEST_TABLE"
+    UNKNOWN = "UNKNOWN"
+
+    @classmethod
+    def _missing_(cls, _: Any) -> OperationState:
+        """Fallback to UNKNOWN for invalid states."""
+        return cls.UNKNOWN
 
 
 class OperationStage(BaseModel):
     """A stage from a running operation."""
 
     displayName: str
-    totalWorkUnits: Union[float, None] = None
-    completeWorkUnits: Union[float, None] = None
+    totalWorkUnits: float | None = None
+    completeWorkUnits: float | None = None
     description: str
 
 
@@ -45,11 +54,13 @@ class OperationError(BaseModel):
     """An error from a failed operation."""
 
     code: int
-    message: Union[str, None] = "Unknown error."
+    message: str | None = "Unknown error."
 
 
 class OperationMetadata(BaseModel):
     """Metadata about an Operation."""
+
+    model_config = ConfigDict(validate_assignment=True)
 
     state: OperationState
     type: OperationType
@@ -57,13 +68,13 @@ class OperationMetadata(BaseModel):
     createTime: datetime
     updateTime: datetime
     startTime: datetime
-    endTime: Union[datetime, None] = None
+    endTime: datetime | None = None
     attempt: int = 1
     progress: float = 0.0
-    stages: Union[tuple[OperationStage, ...], None] = None
-    scriptUri: Union[str, None] = None
-    destinationUris: Union[tuple[str, ...], None] = None
-    batchEecuUsageSeconds: Union[float, None] = 0.0
+    stages: tuple[OperationStage, ...] | None = None
+    scriptUri: str | None = None
+    destinationUris: tuple[str, ...] | None = None
+    batchEecuUsageSeconds: float | None = 0.0
 
 
 class Operation(BaseModel):
@@ -72,14 +83,14 @@ class Operation(BaseModel):
     name: str
     metadata: OperationMetadata
     done: bool = False
-    error: Union[OperationError, None] = None
+    error: OperationError | None = None
 
     model_config = ConfigDict(validate_assignment=True)
 
     @property
     def time_since_creation(self) -> float:
         """Return the time since the operation was created in seconds."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         return (now - self.metadata.createTime).total_seconds()
 
     @property
@@ -112,7 +123,7 @@ class Operation(BaseModel):
 
         return self.name == other.name
 
-    def get_event(self, prev: Operation | None = None) -> Union[events._Event, None]:
+    def get_event(self, prev: Operation | None = None) -> events._Event | None:
         """Compare the operation to a previous state and return the appropriate event.
 
         The previous state can be None in the case of newly created tasks. In this case,
@@ -157,3 +168,12 @@ FINISHED_OPERATION_STATES = (
     OperationState.FAILED,
     OperationState.SUCCEEDED,
 )
+
+
+def list_operations() -> tuple[Operation, ...]:
+    """
+    Return all Earth Engine operations for the currently initialized project.
+    """
+    import ee
+
+    return tuple(Operation(**op) for op in ee.data.listOperations())

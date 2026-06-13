@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 
 from taskee.notifiers import Pushbullet
-from taskee.taskee import Taskee
 
 
 def test_native_notifier(mock_taskee, mock_running_task, mock_native_notifier):
@@ -40,22 +39,12 @@ def test_pushbullet_notifier(mock_taskee, mock_running_task, mock_pushbullet_not
     assert "'mock_running_task' failed after 9 minutes with error 'uh oh'" in msg
 
 
-def test_pushbullet_uninstalled():
-    """An ImportError should be raised if the pushbullet package is not installed."""
-    with patch("ee.data.listOperations") as listOperations, patch.dict(
-        "sys.modules", {"pushbullet": None}
-    ):
-        listOperations.return_value = []
-        with pytest.raises(ImportError, match="pip install pushbullet.py"):
-            Taskee(notifiers=["pushbullet"])
-
-
 def test_initialize_pushbullet_with_key():
     """Test that Pushbullet is initialized with a key."""
     assert Pushbullet()
 
 
-@pytest.mark.no_config()
+@pytest.mark.no_config
 def test_initialize_pushbullet_without_key(mock_config_path):
     """Test that Pushbullet prompts and stores a new key when none is found."""
     fake_key = "new_fake_key_12345"

@@ -15,10 +15,10 @@ from rich.text import Text
 
 from taskee.cli.commands.tasks import create_task_table
 from taskee.cli.styles import get_style
-from taskee.taskee import Taskee
 
 if TYPE_CHECKING:
     from taskee.events import _Event
+    from taskee.taskee import Taskee
 
 
 class _Dashboard:

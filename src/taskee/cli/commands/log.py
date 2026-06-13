@@ -3,13 +3,16 @@ from __future__ import annotations
 import datetime
 import logging
 import time
+from typing import TYPE_CHECKING
 
 from rich.logging import RichHandler
 from rich.status import Status
 
 from taskee.cli.styles import get_style
 from taskee.operation import FINISHED_OPERATION_STATES
-from taskee.taskee import Taskee
+
+if TYPE_CHECKING:
+    from taskee.taskee import Taskee
 
 logging.basicConfig(
     format="%(message)s",

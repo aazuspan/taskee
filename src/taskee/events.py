@@ -8,8 +8,6 @@ from typing import TYPE_CHECKING
 
 import humanize  # type: ignore
 
-from taskee.utils import SuggestionEnumMeta
-
 if TYPE_CHECKING:
     from taskee.operation import Operation  # pragma: no cover
 
@@ -113,7 +111,7 @@ class StartedEvent(_TaskEvent):
         return f"Task '{self.task.metadata.description}' has started processing."
 
 
-class EventEnum(Enum, metaclass=SuggestionEnumMeta):
+class EventEnum(Enum):
     ERROR = ErrorEvent
     FAILED = FailedEvent
     COMPLETED = CompletedEvent
