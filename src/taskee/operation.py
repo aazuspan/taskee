@@ -168,3 +168,12 @@ FINISHED_OPERATION_STATES = (
     OperationState.FAILED,
     OperationState.SUCCEEDED,
 )
+
+
+def list_operations() -> tuple[Operation, ...]:
+    """
+    Return all Earth Engine operations for the currently initialized project.
+    """
+    import ee
+
+    return tuple(Operation(**op) for op in ee.data.listOperations())
