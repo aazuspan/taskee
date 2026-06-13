@@ -3,17 +3,19 @@ from __future__ import annotations
 import os
 from collections import deque
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-import ee
 import humanize
-from google.oauth2.credentials import Credentials as OAuthCredentials
-from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 
 from taskee import events
-from taskee.notifiers import NotifierEnum
-from taskee.operation import FINISHED_OPERATION_STATES, Operation
 
-Credentials = OAuthCredentials | ServiceAccountCredentials | str
+if TYPE_CHECKING:
+    from google.oauth2.credentials import Credentials as OAuthCredentials
+    from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+
+    from taskee.operation import Operation
+
+    Credentials = OAuthCredentials | ServiceAccountCredentials | str
 
 
 CONFIG_PATH = os.path.expanduser("~/.config/taskee.ini")
@@ -47,6 +49,10 @@ class Taskee:
             The Google Cloud project ID to use for Earth Engine. If not provided,
             the default project for the credentials will be used.
         """
+        import ee
+
+        from taskee.notifiers import NotifierEnum
+
         ee.Initialize(credentials=credentials, project=project)
         self.notifiers = [NotifierEnum[name.upper()].value() for name in notifiers]
         self.watch_for = [events.EventEnum[name.upper()].value for name in watch_for]
@@ -79,6 +85,8 @@ class Taskee:
 
     def dispatch(self) -> None:
         """Dispatch all events in the event queue to notifiers."""
+        from taskee.operation import FINISHED_OPERATION_STATES
+
         while self.event_queue:
             event = self.event_queue.popleft()
             if not isinstance(event, tuple(self.watch_for)):
@@ -94,7 +102,9 @@ class Taskee:
 
     def _get_events(self) -> tuple[events._Event, ...]:
         """Update all tasks and return any events that occured since the last update."""
-        ops = tuple(Operation(**op) for op in ee.data.listOperations())
+        from taskee.operation import list_operations
+
+        ops = list_operations()
         events = []
 
         for op in ops:

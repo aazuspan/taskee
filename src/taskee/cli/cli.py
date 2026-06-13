@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import ee
 import rich_click as click  # type: ignore
@@ -10,6 +10,9 @@ from taskee.cli.commands import dashboard, log, tasks, test
 from taskee.events import ErrorEvent, EventEnum
 from taskee.notifiers import NotifierEnum
 from taskee.taskee import Taskee
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.TEXT_MARKUP = True

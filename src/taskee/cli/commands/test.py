@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from taskee.cli.commands import log
-from taskee.notifiers.notifier import Notifier
+
+if TYPE_CHECKING:
+    from taskee.notifiers.notifier import Notifier
 
 
 def test(notifiers: tuple[Notifier, ...]) -> None:
